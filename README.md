@@ -9,12 +9,12 @@
 > Incluir nome RA e foco de especialização de cada membro do grupo.
 > |Nome  | RA | Especialização|
 > |--|--|--|
-> | Alan Freitas Ribeiro  | 193400  | Biologia |
+> | Alan Freitas Ribeiro  | 193400  | Computação |
 > | Augusto José Peterlevitz  | 209783  | Computação |
-> | Felipe Kennedy Carvalho Torquato | 174157  | Computação |
+> | Felipe Kennedy Carvalho Torquato | 174157  | Biologia |
 > | Luis Henrique Angélico | 248891  | Computação|
-> | Naruan Francisco Ferraz e Ferraz | 123456  | XXX|
-> | Paulo Costa | 123456  | XXX|
+> | Naruan Francisco Ferraz e Ferraz | xxxx  | Biologia |
+> | Paulo Costa | xxxx  | Computação |
 
 # Apresentação
 
