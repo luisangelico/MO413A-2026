@@ -12,7 +12,6 @@
 > | Alan Freitas Ribeiro  | 193400  | Biologia |
 > | Augusto José Peterlevitz  | 209783  | Computação |
 > | Felipe Kennedy Carvalho Torquato | 174157  | Computação |
-> | Kauã Vasconcelos | 324041  | XXX|
 > | Luis Henrique Angélico | 248891  | Computação|
 > | Naruan Francisco Ferraz e Ferraz | 123456  | XXX|
 > | Paulo Costa | 123456  | XXX|
