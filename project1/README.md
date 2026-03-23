@@ -1,10 +1,10 @@
 
-# Projeto `Análise de Redes de Melanoma, Carcinoma e Tecido Saudável por Meio de Redes de Expressão Diferencial e Interação Proteica.`
-# Project `Analysis of Melanoma, Carcinoma, and Healthy Tissue Networks Through Differential Expression Networks and Protein Interaction.`
+# Projeto `Câncer de Pele e seus Tipos: uma Análise do Perfil de Expressão Gênica em Redes.`
+# Project `Skin Cancer and its Types: An Analysis of Gene Expression Profiles in Networks.`
 
 # Descrição Resumida do Projeto
 
-> Este projeto visa comparar redes de interação gênica derivadas de amostras de melanoma, carcinoma e tecido saudável. Serão analisadas as diferenças na topologia da rede, nos genes centrais e nos módulos biológicos, com objetivo de observar padrões específicos da doença e mecanismos compartilhados, fornecendo informações sobre a biologia tumoral e potenciais biomarcadores.
+> Este projeto visa comparar redes de interação gênica derivadas de amostras de câncer de pele melanoma, não-melanoma e tecido saudável. Serão analisadas as diferenças na topologia da rede, nos genes centrais e nos módulos biológicos, com objetivo de observar padrões específicos da doença e mecanismos compartilhados, fornecendo informações sobre a biologia tumoral e potenciais biomarcadores.
 
 
 # Slides
