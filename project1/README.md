@@ -9,7 +9,7 @@
 
 # Slides
 
-[Slides P1](https://docs.google.com/presentation/d/1Wa21J_w7CIT62xtVCvaYQdo1LmQk3-bqbujdAck-rXY/edit?usp=sharing)
+[Slides P1](project1/assets/MO413A.pdf)
 
 # Fundamentação Teórica
 
