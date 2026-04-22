@@ -1,0 +1,30 @@
+[project]
+name = "analise-cancro-pele"
+version = "0.1.0"
+description = "Análise de expressão gênica em redes — MO413A UNICAMP 2026"
+authors = [
+    {name = "Paulo Costa",email = "eu@paulo.costa.nom.br"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "geoparse (>=2.0.4,<3.0.0)",
+    "pandas (>=3.0.1,<4.0.0)",
+    "numpy (>=2.4.4,<3.0.0)",
+    "marimo (>=0.21.1,<0.22.0)",
+    "anthropic (>=0.96.0,<0.97.0)",
+    "pydantic-ai-slim (>=1.85.0,<2.0.0)",
+    "scipy (>=1.17.1,<2.0.0)",
+    "nbformat (>=5.10.4,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.marimo.runtime]
+auto_instantiate = true      # roda tudo ao abrir o notebook
+on_cell_change = "autorun"   # re-executa dependentes ao editar uma cell
+watcher_on_save = "autorun"  # re-executa quando o .py e salvo por fora (VS Code etc)
