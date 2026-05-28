@@ -25,7 +25,7 @@ class GATv2Classifier(torch.nn.Module):
         self.norm2 = LayerNorm(hidden_channels)
         self.lin = torch.nn.Linear(hidden_channels, num_classes)
 
-    def forward(self, x, edge_index, batch, return_attn=False):
+    def forward(self, x, edge_index, batch, return_attn=False, return_embedding=False):
         x, (edge_index_attn, alpha) = self.conv1(x, edge_index, return_attention_weights=True)
         x = self.norm1(x)
         x = F.elu(x)
@@ -35,12 +35,15 @@ class GATv2Classifier(torch.nn.Module):
         x = self.norm2(x)
         x = F.elu(x)
 
-        x = global_mean_pool(x, batch)
-        x = self.lin(x)
+        embedding = global_mean_pool(x, batch)
+        logits = self.lin(embedding)
 
+        out = (logits,)
         if return_attn:
-            return x, edge_index_attn, alpha
-        return x
+            out = out + (edge_index_attn, alpha)
+        if return_embedding:
+            out = out + (embedding,)
+        return out[0] if len(out) == 1 else out
 
 
 def save_model(model, path):

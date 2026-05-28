@@ -17,6 +17,7 @@ from collections import Counter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import torch
 from sklearn.decomposition import PCA
@@ -24,6 +25,7 @@ from sklearn.decomposition import PCA
 from src.config import CLASS_NAMES, DATASET_FILE
 
 OUT_PATH = Path("dataset_overview.png")
+GRAPH_OUT_PATH = Path("dataset_ppi_graph.png")
 COLORS = {0: "#d62728", 1: "#ff7f0e", 2: "#2ca02c"}
 
 print(f"Loading {DATASET_FILE}...")
@@ -114,3 +116,55 @@ ax.text(
 plt.tight_layout()
 plt.savefig(OUT_PATH, dpi=150, bbox_inches="tight")
 print(f"Saved: {OUT_PATH}")
+
+# ----------------------------------------------------------------------------
+# Standalone PPI graph figure (shared across all samples)
+# ----------------------------------------------------------------------------
+print("Building PPI graph figure...")
+gene_names = getattr(sample0, "gene_names", [str(i) for i in range(n_nodes)])
+mean_expr = X.mean(axis=0)
+
+G = nx.Graph()
+G.add_nodes_from(range(n_nodes))
+edges_np = sample0.edge_index.numpy()
+for k in range(edges_np.shape[1]):
+    s, d = int(edges_np[0, k]), int(edges_np[1, k])
+    if s != d:
+        G.add_edge(s, d)
+
+# Drop isolated nodes for legibility
+isolated = [n for n in G.nodes() if G.degree(n) == 0]
+G.remove_nodes_from(isolated)
+
+fig2, ax2 = plt.subplots(figsize=(12, 12))
+if len(G) == 0:
+    ax2.text(0.5, 0.5, "No edges in PPI graph", ha="center", va="center")
+else:
+    pos = nx.spring_layout(G, k=0.3, iterations=80, seed=42)
+    nodes = list(G.nodes())
+    degrees = np.array([G.degree(n) for n in nodes])
+    node_expr = np.array([mean_expr[n] for n in nodes])
+
+    nx.draw_networkx_edges(G, pos, ax=ax2, alpha=0.25, width=0.6, edge_color="gray")
+    nc = nx.draw_networkx_nodes(
+        G, pos, nodelist=nodes, ax=ax2,
+        node_size=20 + 8 * degrees,
+        node_color=node_expr, cmap="viridis",
+        edgecolors="black", linewidths=0.3,
+    )
+
+    # Label only top-degree hubs
+    top_hub_idx = np.argsort(degrees)[::-1][:20]
+    labels = {nodes[i]: gene_names[nodes[i]] for i in top_hub_idx}
+    nx.draw_networkx_labels(G, pos, labels=labels, ax=ax2, font_size=8)
+
+    plt.colorbar(nc, ax=ax2, shrink=0.6, label="Mean expression")
+    ax2.set_title(
+        f"PPI graph — {len(G)} connected genes / {n_nodes} total · "
+        f"{G.number_of_edges()} edges (top 20 hubs labeled)"
+    )
+    ax2.axis("off")
+
+plt.tight_layout()
+plt.savefig(GRAPH_OUT_PATH, dpi=150, bbox_inches="tight")
+print(f"Saved: {GRAPH_OUT_PATH}")
