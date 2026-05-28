@@ -7,8 +7,8 @@ Usage: python3 predict.py
 import torch
 from pathlib import Path
 
-from config import DATASET_FILE
-from model import load_model
+from src.config import DATASET_FILE, get_device
+from src.model import load_model
 
 print("="*70)
 print("🧬 GAT Model Predictor")
@@ -32,7 +32,7 @@ MODEL_PATH = latest_dir / 'best_model.pt'
 if not MODEL_PATH.exists():
     MODEL_PATH = latest_dir / 'modelo_final.pt'
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = get_device()
 model, model_config = load_model(MODEL_PATH, device=device)
 NUM_CLASSES = model_config["num_classes"]
 

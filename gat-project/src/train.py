@@ -18,8 +18,8 @@ import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
 from torch_geometric.loader import DataLoader
 
-from config import DATASET_FILE, PROCESSED_DATASET_PATH
-from model import GATv2Classifier, save_model
+from src.config import DATASET_FILE, PROCESSED_DATASET_PATH, get_device
+from src.model import GATv2Classifier, save_model
 
 BATCH_SIZE = 32
 NUM_EPOCHS = 500
@@ -68,7 +68,7 @@ print(f"  val classes:   {Counter(int(d.y.item()) for d in val_set)}")
 print(f"  test classes:  {Counter(int(d.y.item()) for d in test_set)}")
 
 # Setup
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = get_device()
 model = GATv2Classifier(hidden_channels=64, num_classes=NUM_CLASSES).to(device)
 print(f"Device: {device}")
 
@@ -162,7 +162,7 @@ np.savez(
 
 # Evaluate best model on test set
 print(f"\n{'='*60}\nEvaluating best model on held-out test set\n{'='*60}")
-from model import load_model
+from src.model import load_model
 
 best_model, _ = load_model(RUN_DIR / "best_model.pt", device=device)
 model = best_model

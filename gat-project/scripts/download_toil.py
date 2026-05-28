@@ -30,11 +30,9 @@ import torch
 from torch_geometric.data import Data
 
 # ----------------------------------------------------------------------------
-# Configuration
+# Configuration — single source of truth in src/config.py
 # ----------------------------------------------------------------------------
-NUM_NODES = 500
-CONFIDENCE_THRESHOLD = 500
-PROCESSED_DATASET_PATH = Path("./data/processed/")
+from src.config import NUM_NODES, CONFIDENCE_THRESHOLD, PROCESSED_DATASET_PATH
 RAW_DATA_PATH = Path("./data/raw_toil/")
 PROCESSED_DATASET_PATH.mkdir(parents=True, exist_ok=True)
 RAW_DATA_PATH.mkdir(parents=True, exist_ok=True)
@@ -108,7 +106,9 @@ download_to(URL_PROBEMAP, PROBEMAP_LOCAL)
 # 2. Filter phenotype to skin samples we want
 # ----------------------------------------------------------------------------
 print("\n[2/6] Selecting skin samples from phenotype...")
-pheno = pd.read_csv(PHENO_LOCAL, sep="\t", compression="gzip", low_memory=False)
+pheno = pd.read_csv(
+    PHENO_LOCAL, sep="\t", compression="gzip", low_memory=False, encoding="latin-1"
+)
 
 # Phenotype columns of interest:
 #   sample, _study, _primary_site, _sample_type, primary disease or tissue

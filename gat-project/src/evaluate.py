@@ -12,8 +12,8 @@ import seaborn as sns
 import torch
 from sklearn.metrics import classification_report, confusion_matrix
 
-from config import DATASET_FILE
-from model import load_model
+from src.config import DATASET_FILE, get_device
+from src.model import load_model
 
 print("=" * 70)
 print("Evaluating Trained GAT Model")
@@ -30,7 +30,7 @@ model_path = run_dir / "best_model.pt"
 if not model_path.exists():
     model_path = run_dir / "modelo_final.pt"
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = get_device()
 model, config = load_model(model_path, device=device)
 NUM_CLASSES = config["num_classes"]
 print(f"Loaded {model_path.name} (num_classes={NUM_CLASSES})")

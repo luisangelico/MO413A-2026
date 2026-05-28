@@ -49,7 +49,7 @@ section = st.sidebar.radio(
 @st.cache_resource
 def load_dataset():
     try:
-        from config import DATASET_FILE
+        from src.config import DATASET_FILE
         return torch.load(DATASET_FILE, weights_only=False)
     except:
         return None

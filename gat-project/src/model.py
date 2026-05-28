@@ -58,7 +58,9 @@ def load_model(path, device=None):
             config = json.load(f)
     else:
         config = {"hidden_channels": 64, "num_classes": 3, "heads": 4, "dropout": 0.4, "in_channels": 1}
-    device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device is None:
+        from src.config import get_device
+        device = get_device()
     model = GATv2Classifier(**config).to(device)
     model.load_state_dict(torch.load(path, map_location=device))
     model.eval()

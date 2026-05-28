@@ -4,15 +4,21 @@ Interactive Streamlit app to explore the TCGA melanoma dataset.
 Run with: streamlit run explore_data.py
 """
 
+import sys
+from pathlib import Path
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 import streamlit as st
 import torch
 import plotly.graph_objects as go
 import networkx as nx
 import pandas as pd
 import numpy as np
-from pathlib import Path
 
-from config import DATASET_FILE
+from src.config import DATASET_FILE
 
 st.set_page_config(page_title="TCGA Melanoma Dataset Explorer", layout="wide")
 
