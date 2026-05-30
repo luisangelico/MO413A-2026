@@ -1,0 +1,128 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Multi-seed stability</title>
+<style>
+  body { font-family:-apple-system,system-ui,sans-serif; max-width:920px;
+          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }
+  .back-btn { display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
+               background:#1f77b4; color:white !important; border-radius:5px;
+               text-decoration:none; font-size:0.9em; }
+  .back-btn:hover { background:#155a8a; }
+  h1 { font-size:1.5em; margin-bottom:0.1em; }
+  h2 { font-size:1.15em; margin-top:1.6em; }
+  .meta { color:#666; font-size:0.9em; }
+  .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
+            padding:0.7em 1em; margin:1em 0; }
+  .callout { background:#fffbf2; border-left:3px solid #e0a020;
+              padding:0.7em 1em; margin:1em 0; }
+  table { border-collapse:collapse; font-size:0.92em; margin:0.8em 0; }
+  th, td { padding:0.4em 0.7em; border-bottom:1px solid #eee; text-align:left; }
+  th { background:#f4f4f4; }
+  img { width:100%; max-width:880px; border:1px solid #eee;
+         border-radius:6px; margin:0.6em 0; }
+  code { background:#f4f4f4; padding:0 0.3em; border-radius:3px; }
+</style></head><body>
+
+<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+
+<h1>Multi-seed stability — are the findings real?</h1>
+<p class="meta">Multi-seed run: <code>multiseed_20260530_145425</code> · seeds = 5</p>
+
+<div class="plain">
+  <strong>The question.</strong> If we retrain the same architecture from
+  scratch with a different random seed, do we recover the same answers?
+  If yes, the project's findings are reproducible. If no, any single-seed
+  result is anecdotal and should be reported as a consensus.
+</div>
+
+<h2>1. Performance variance</h2>
+<p>
+  Five seeds, identical architecture and data, different initializations:
+</p>
+<ul>
+  <li><strong>Test accuracy:</strong> 91.71% ± 0.66%
+      (range 91.19–92.75%, 95% CI half-width
+      ≈ 0.57%).</li>
+</ul>
+<img src="../data/processed/multiseed_20260530_145425/figures/stability_accuracy.png"
+     alt="Per-seed accuracy and per-class F1">
+
+<h2>2. Attention-ranking stability</h2>
+<p>
+  We computed each seed's per-class node-importance vector (1000 genes)
+  and asked: do the seeds rank genes in the same order?
+</p>
+<ul>
+  <li><strong>Spearman ρ</strong> compares full rankings (1.0 = identical
+    order, 0.0 = unrelated).</li>
+  <li><strong>Top-50 Jaccard</strong> compares which 50 genes each seed
+    flagged as most important (1.0 = same set, 0.0 = no overlap).</li>
+</ul>
+<table>
+<tr><th>ranking</th><th>Spearman ρ</th><th>top-50 Jaccard</th></tr>
+<tr><td>Primary Tumor</td><td>-0.024 ± 0.079</td><td>0.186 ± 0.056</td></tr><tr><td>Metastasis</td><td>0.088 ± 0.069</td><td>0.211 ± 0.043</td></tr><tr><td>Normal Tissue</td><td>0.092 ± 0.068</td><td>0.202 ± 0.048</td></tr><tr><td>Tumor - Normal</td><td>0.014 ± 0.089</td><td>0.169 ± 0.035</td></tr><tr><td>Metastasis - Primary</td><td>-0.001 ± 0.123</td><td>0.168 ± 0.050</td></tr>
+</table>
+<img src="../data/processed/multiseed_20260530_145425/figures/stability_spearman.png"
+     alt="Cross-seed Spearman heatmap per ranking">
+
+<div class="callout">
+  <strong>Reading guide.</strong>
+  ρ ≥ 0.8 means rankings are highly stable — single-seed top-K results
+  are defensible. 0.5–0.8 means moderately stable; report
+  <em>consensus</em> rankings (mean rank across seeds) rather than any
+  one seed's. Below 0.5 means the rankings shuffle from seed to seed and
+  conclusions need to be tempered.
+  <br><br>
+  Difference rankings (e.g. <em>Metastasis − Primary</em>) are
+  intrinsically noisier than per-class rankings — noise compounds when you
+  subtract two estimates — so expect lower numbers there. The
+  <code>stability_consensus_top20.csv</code> file alongside this page
+  lists the top-20 genes by mean rank across seeds, with the standard
+  deviation of each gene's rank — that is the publishable list.
+</div>
+
+<h2>2. Embedding geometry across seeds</h2>
+<p>
+  Even when two seeds learn slightly different 64-dimensional spaces, the
+  question is whether the <em>shape</em> of the cloud is the same — does
+  each sample land near the same neighbors regardless of seed?
+</p>
+<ul>
+  <li><strong>kNN Jaccard (k=10):</strong>
+      0.463 ± 0.118
+      across seed pairs over 193 samples present in
+      every seed's test split. <em>1.0 = identical neighborhoods, 0.0 = no overlap.</em></li>
+  <li><strong>Procrustes disparity:</strong>
+      0.0467 (0 = identical up to rotation/scale).</li>
+</ul>
+<img src="../data/processed/multiseed_20260530_145425/figures/stability_knn_jaccard.png"
+     alt="Per-sample kNN Jaccard across seeds, by class">
+
+
+<h2>3. Pseudotime stability</h2>
+<p>
+  Each seed produces its own Normal → Metastasis pseudotime axis. We
+  align the direction across seeds (flip if anti-correlated), then look
+  at how much each sample's pseudotime varies from seed to seed. Tight
+  error bars mean the model agrees on where this sample sits along the
+  progression axis; large bars mean the sample is ambiguous.
+</p>
+<ul>
+  <li><strong>Per-sample σ:</strong> mean = 0.049,
+      median = 0.038, max = 0.132
+      (on a 0–1 axis).</li>
+</ul>
+<img src="../data/processed/multiseed_20260530_145425/figures/stability_pseudotime.png"
+     alt="Per-sample pseudotime across seeds">
+
+
+<h2>What this means</h2>
+<p>
+  Reproducibility is not a bonus check — it is the difference between an
+  anecdote and a finding. A model that lands on the same gene rankings,
+  the same neighborhood structure, and the same per-sample progression
+  position regardless of initialization is one whose conclusions can be
+  cited. Numbers above tell you, per dimension of the analysis, exactly
+  how much weight each finding bears.
+</p>
+
+</body></html>

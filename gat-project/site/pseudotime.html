@@ -1,0 +1,133 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Pseudotime — gene attention along tumor-likeness</title>
+<style>
+  body { font-family:-apple-system,system-ui,sans-serif; max-width:900px;
+          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }
+  .back-btn { display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
+               background:#1f77b4; color:white !important; border-radius:5px;
+               text-decoration:none; font-size:0.9em; }
+  .back-btn:hover { background:#155a8a; }
+  h1 { font-size:1.5em; } h2 { font-size:1.1em; margin-top:1.6em; }
+  .meta { color:#666; font-size:0.9em; }
+  img { width:100%; max-width:880px; border:1px solid #eee; border-radius:6px;
+         margin:0.6em 0; }
+  .callout { background:#fffbf2; border-left:3px solid #e0a020;
+              padding:0.7em 1em; margin:1em 0; }
+  .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
+            padding:0.7em 1em; margin:1em 0; }
+  table { border-collapse:collapse; font-size:0.9em; margin:0.6em 0; }
+  th,td { padding:0.35em 0.7em; border-bottom:1px solid #eee; text-align:right; }
+  th { background:#f4f4f4; }
+  .legend { display:flex; gap:1em; flex-wrap:wrap; font-size:0.9em; margin:0.5em 0; }
+  .swatch { display:inline-block; width:12px; height:12px; border-radius:3px;
+            margin-right:0.3em; vertical-align:middle; border:1px solid #999; }
+</style></head><body>
+
+<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+
+<h1>Pseudotime — how the model's focus shifts from healthy skin to metastasis</h1>
+<p class="meta">Run: <code>run_multiseed_seed2</code></p>
+
+<div class="plain">
+  <strong>In one sentence.</strong> We sort every sample on a "tumor-likeness"
+  axis and watch which genes the model relies on at each step. Genes whose
+  importance rises as samples become more tumor-like are candidate signals of
+  melanoma progression — as <em>seen by the model</em>.
+</div>
+
+<h2>What is an "embedding"?</h2>
+<p>
+  Inside the trained network, each sample is summarized as a list of ~64
+  numbers — its <strong>embedding</strong>. Think of it as the model's
+  fingerprint of the sample: similar embeddings = samples the model thinks
+  look alike. We never look at this fingerprint directly during prediction;
+  the network just uses it to decide a class. But we <em>can</em> look at it,
+  and that's where this analysis starts.
+</p>
+
+<h2>What is "pseudotime" here?</h2>
+<p>
+  We computed two anchors in embedding space: the average embedding of the
+  Normal-skin samples (call it the "normal anchor") and the average
+  embedding of the Metastasis samples (the "metastasis anchor"). Then we
+  drew an imaginary line between the two and projected every sample onto
+  that line. Each sample gets a number between 0 and 1:
+</p>
+<ul>
+  <li><strong>0</strong> = embedding sits at the normal-skin anchor</li>
+  <li><strong>1</strong> = embedding sits at the metastasis anchor</li>
+  <li>values in between = "somewhere along the way"</li>
+</ul>
+<p>
+  We split this 0→1 axis into <strong>10 equal-width bins</strong>
+  (deciles), and for each bin we average the model's attention scores
+  across all samples that fell in that bin. The result is a picture of
+  <em>which genes the model focuses on at each step along the
+  Normal → Metastasis axis</em>.
+</p>
+
+<div class="callout">
+  <strong>Honest caveat.</strong> TCGA samples are not a time course — there
+  is no patient followed across years. "Pseudotime" here is a <em>cohort
+  ordering</em> built from how the trained model sees the data. It describes
+  the model's view, not the biology of any single tumor evolving. Genes
+  whose attention rises along this axis are <em>hypotheses</em> for
+  progression markers, not confirmed ones.
+</div>
+
+<h2>Composition of each pseudotime decile</h2>
+<p>
+  Sanity check: the early bins should be mostly Normal samples, the late
+  bins should be mostly Metastasis. If they are, the axis is doing what we
+  expect. (Primary tumors typically sit in the middle.)
+</p>
+<table>
+<tr><th>decile</th><th>Normal</th><th>Primary</th><th>Metastasis</th><th>total</th></tr>
+<tr><td>1</td><td>32</td><td>0</td><td>0</td><td>32</td></tr><tr><td>2</td><td>42</td><td>0</td><td>0</td><td>42</td></tr><tr><td>3</td><td>6</td><td>0</td><td>0</td><td>6</td></tr><tr><td>4</td><td>14</td><td>0</td><td>0</td><td>14</td></tr><tr><td>5</td><td>19</td><td>3</td><td>1</td><td>23</td></tr><tr><td>6</td><td>8</td><td>0</td><td>5</td><td>13</td></tr><tr><td>7</td><td>0</td><td>3</td><td>8</td><td>11</td></tr><tr><td>8</td><td>0</td><td>0</td><td>13</td><td>13</td></tr><tr><td>9</td><td>0</td><td>0</td><td>18</td><td>18</td></tr><tr><td>10</td><td>0</td><td>0</td><td>6</td><td>6</td></tr>
+</table>
+
+<h2>Heatmap: gene attention across pseudotime</h2>
+<p>
+  Rows = genes whose attention varies most across the axis. Columns = the
+  10 pseudotime deciles, ordered Normal-like → Metastasis-like.
+  Each row is normalized by its own peak (so bright = "this gene's
+  attention peaks <em>here</em>"). Rows are reordered so genes that peak
+  early appear at the top, genes that peak late at the bottom.
+</p>
+<p>
+  Reading the figure: a row that's bright on the left and dark on the
+  right means "the model paid attention to this gene mostly when looking
+  at normal-like samples, and stopped caring as samples became more
+  tumor-like." The reverse pattern points the other way.
+</p>
+<img src="../data/processed/run_multiseed_seed2/figures/pseudotime_heatmap.png"
+     alt="Per-decile mean attention heatmap">
+
+<h2>Selected gene trajectories</h2>
+<p>
+  A few representative genes from each reference category, plotted as
+  attention vs. pseudotime decile. This is the same data as the heatmap
+  but easier to read for a small set of genes.
+</p>
+<div class="legend">
+  <span><span class="swatch" style="background:#d62728"></span>melanocyte lineage</span>
+  <span><span class="swatch" style="background:#ff7f0e"></span>melanoma progression</span>
+  <span><span class="swatch" style="background:#2ca02c"></span>immune infiltrate</span>
+  <span><span class="swatch" style="background:#1f77b4"></span>keratin / skin normal</span>
+</div>
+<img src="../data/processed/run_multiseed_seed2/figures/pseudotime_lines.png"
+     alt="Selected gene trajectories">
+
+<h2>Why does this matter?</h2>
+<p>
+  This is the project's most ambitious figure: it ties together the
+  <em>embedding</em> (the model's internal summary) and the
+  <em>attention</em> (which genes the model uses) into one progression
+  story. If keratin and skin-normal genes dominate the early deciles and
+  fade in the late deciles, while melanocyte-lineage and melanoma-
+  progression genes do the opposite, the model has internalized a coherent
+  picture of how skin transitions toward melanoma — purely from
+  expression and PPI topology, with no progression labels in training.
+</p>
+
+</body></html>

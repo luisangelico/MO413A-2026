@@ -27,18 +27,19 @@ class GATv2Classifier(torch.nn.Module):
         self.norm3 = LayerNorm(hidden_channels)
         self.lin = torch.nn.Linear(hidden_channels, num_classes)
 
-    def forward(self, x, edge_index, batch, return_attn=False, return_embedding=False):
-        x, (edge_index_attn, alpha) = self.conv1(x, edge_index, return_attention_weights=True)
+    def forward(self, x, edge_index, batch, return_attn=False, return_embedding=False,
+                return_all_attn=False):
+        x, (ei1, a1) = self.conv1(x, edge_index, return_attention_weights=True)
         x = self.norm1(x)
         x = F.elu(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
 
-        x, _ = self.conv2(x, edge_index, return_attention_weights=True)
+        x, (ei2, a2) = self.conv2(x, edge_index, return_attention_weights=True)
         x = self.norm2(x)
         x = F.elu(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
 
-        x, _ = self.conv3(x, edge_index, return_attention_weights=True)
+        x, (ei3, a3) = self.conv3(x, edge_index, return_attention_weights=True)
         x = self.norm3(x)
         x = F.elu(x)
 
@@ -47,7 +48,11 @@ class GATv2Classifier(torch.nn.Module):
 
         out = (logits,)
         if return_attn:
-            out = out + (edge_index_attn, alpha)
+            # back-compat: layer-1 (edge_index, alpha) tuple
+            out = out + (ei1, a1)
+        if return_all_attn:
+            # list of (edge_index, alpha) per layer; alpha shape: [E, heads]
+            out = out + ([(ei1, a1), (ei2, a2), (ei3, a3)],)
         if return_embedding:
             out = out + (embedding,)
         return out[0] if len(out) == 1 else out

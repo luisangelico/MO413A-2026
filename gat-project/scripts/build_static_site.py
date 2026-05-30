@@ -596,7 +596,7 @@ metric_rows = "".join(
 overview = f"""<!doctype html>
 <html><head><meta charset="utf-8"><title>Overview</title>{PAGE_CSS}</head><body>
 <header>
-  <a href="index.html">&larr; index</a>
+  <a href="index.html">&larr; index</a> · <a href="biomarkers.html">biomarkers (multi-seed)</a>
   <h1>Run overview</h1>
   <div>Run: {htmllib.escape(run_dir.name)} · weights: {htmllib.escape(weights_path.name)} · split: {args.split}</div>
 </header>
@@ -637,7 +637,12 @@ index = f"""<!doctype html>
 <header>
   <h1>GAT melanoma predictor — predictions</h1>
   <div>Run: <code>{htmllib.escape(run_dir.name)}</code> · split: <strong>{args.split}</strong> ·
-       <a href="overview.html">run overview</a></div>
+       <a href="overview.html">run overview</a> ·
+       <a href="interpret/index.html">attention interpretability</a> ·
+       <a href="embeddings.html">embeddings</a> ·
+       <a href="pseudotime.html">pseudotime</a> ·
+       <a href="stability.html">stability</a> ·
+       <a href="biomarkers.html">biomarkers (multi-seed)</a></div>
 </header>
 <div class="metric-row">
   <div class="metric"><div class="label">Samples</div><div class="value">{len(sample_records)}</div></div>
