@@ -44,7 +44,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--run", type=Path, default=None,
                     help="Training run directory. Defaults to most recent under PROCESSED_DATASET_PATH.")
 parser.add_argument("--split", choices=["test", "val", "train", "all"], default="test")
-parser.add_argument("--out", type=Path, default=Path("site"))
+parser.add_argument("--out", type=Path,
+                    default=Path(__file__).resolve().parent.parent.parent / "docs",
+                    help="Output directory. Defaults to <repo-root>/docs (GitHub Pages source).")
 parser.add_argument("--max-samples", type=int, default=None,
                     help="Cap number of per-sample pages (default: no cap).")
 args = parser.parse_args()
