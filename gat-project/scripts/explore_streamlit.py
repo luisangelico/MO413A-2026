@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Interactive Streamlit app to explore the TCGA melanoma dataset.
-Run with: streamlit run explore_data.py
+Run with: streamlit run explore_streamlit.py
 """
 
 import sys

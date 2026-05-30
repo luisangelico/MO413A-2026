@@ -27,13 +27,21 @@ import numpy as np
 import pandas as pd
 import requests
 import torch
+from sklearn.model_selection import train_test_split
 from torch_geometric.data import Data
 
 # ----------------------------------------------------------------------------
 # Configuration — single source of truth in src/config.py
 # ----------------------------------------------------------------------------
 from src.config import NUM_NODES, CONFIDENCE_THRESHOLD, PROCESSED_DATASET_PATH
-RAW_DATA_PATH = Path("./data/raw_toil/")
+
+# Stratified split done here (not in train.py) so that top-variable gene
+# selection only sees train samples — prevents test-set leakage into feature
+# selection. SEED must match src/train.py for reproducibility.
+SPLIT_SEED = 42
+TEST_FRAC = 0.15
+VAL_FRAC = 0.15
+RAW_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "raw_toil"
 PROCESSED_DATASET_PATH.mkdir(parents=True, exist_ok=True)
 RAW_DATA_PATH.mkdir(parents=True, exist_ok=True)
 
@@ -199,10 +207,31 @@ expr = expr[~expr.index.duplicated(keep="first")]
 print(f"  after gene-symbol mapping: {expr.shape}")
 
 # ----------------------------------------------------------------------------
-# 5. Top-variable gene selection + STRING PPI
+# 5. Stratified split → top-variable gene selection on TRAIN ONLY → STRING PPI
 # ----------------------------------------------------------------------------
-print(f"\n[5/6] Selecting top {NUM_NODES} variable genes...")
-top_genes = expr.var(axis=1).nlargest(NUM_NODES).index
+y_lookup = dict(zip(selected["sample"], selected["y"]))
+# Align labels with the expression columns we actually loaded, in column order.
+sample_ids = [c for c in expr.columns if c in y_lookup]
+labels = np.array([y_lookup[s] for s in sample_ids], dtype=int)
+idx = np.arange(len(sample_ids))
+
+train_idx, temp_idx = train_test_split(
+    idx, test_size=TEST_FRAC + VAL_FRAC, stratify=labels, random_state=SPLIT_SEED
+)
+val_idx, test_idx = train_test_split(
+    temp_idx,
+    test_size=TEST_FRAC / (TEST_FRAC + VAL_FRAC),
+    stratify=labels[temp_idx],
+    random_state=SPLIT_SEED,
+)
+train_samples = [sample_ids[i] for i in train_idx]
+print(
+    f"  split: train={len(train_idx)} | val={len(val_idx)} | test={len(test_idx)} "
+    f"(seed={SPLIT_SEED})"
+)
+
+print(f"\n[5/6] Selecting top {NUM_NODES} variable genes (from TRAIN samples only)...")
+top_genes = expr[train_samples].var(axis=1).nlargest(NUM_NODES).index
 expr_top = expr.loc[top_genes]
 genes_list = expr_top.index.tolist()
 
@@ -234,13 +263,11 @@ print(f"  edge_index shape: {tuple(edge_index.shape)}")
 # 6. Build per-sample graphs
 # ----------------------------------------------------------------------------
 print("\n[6/6] Building patient graphs...")
-y_lookup = dict(zip(selected["sample"], selected["y"]))
 
 dataset = []
 class_counts = {0: 0, 1: 0, 2: 0}
-for sample_id in expr_top.columns:
-    if sample_id not in y_lookup:
-        continue
+# Iterate sample_ids (split order) so dataset indices line up with train/val/test idx.
+for sample_id in sample_ids:
     y = int(y_lookup[sample_id])
     # TOIL values are already log2(TPM+0.001) — do NOT log-transform again.
     x = torch.tensor(expr_top[sample_id].values, dtype=torch.float).unsqueeze(1)
@@ -258,7 +285,10 @@ print(f"    Metastasis: {class_counts[1]}")
 print(f"    Normal:     {class_counts[2]}")
 
 torch.save(dataset, OUTPUT_FILE)
+SPLITS_FILE = OUTPUT_FILE.with_suffix(".splits.npz")
+np.savez(SPLITS_FILE, train=train_idx, val=val_idx, test=test_idx, seed=SPLIT_SEED)
 print(f"\nSaved: {OUTPUT_FILE}")
+print(f"Saved: {SPLITS_FILE}  (use these splits in train.py — gene selection used train only)")
 print(
     "\nNext: update train_model.py to point at this file:\n"
     f"  dataset_path = Path('{OUTPUT_FILE}')"

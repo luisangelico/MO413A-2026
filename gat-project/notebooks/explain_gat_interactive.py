@@ -760,7 +760,8 @@ else:  # Real Example
     """)
 
     # Check if model exists
-    model_dirs = list(Path('data/processed/').glob('run_*'))
+    from src.config import PROCESSED_DATASET_PATH
+    model_dirs = list(PROCESSED_DATASET_PATH.glob('run_*'))
 
     if model_dirs:
         latest_dir = max(model_dirs, key=lambda p: p.stat().st_mtime)

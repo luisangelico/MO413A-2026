@@ -9,7 +9,7 @@ from torch_geometric.nn import GATv2Conv, LayerNorm, global_mean_pool
 
 
 class GATv2Classifier(torch.nn.Module):
-    def __init__(self, hidden_channels=64, num_classes=3, heads=4, dropout=0.4, in_channels=1):
+    def __init__(self, hidden_channels=128, num_classes=3, heads=4, dropout=0.4, in_channels=1):
         super().__init__()
         self.config = {
             "hidden_channels": hidden_channels,
@@ -21,8 +21,10 @@ class GATv2Classifier(torch.nn.Module):
         self.dropout = dropout
         self.conv1 = GATv2Conv(in_channels, hidden_channels, heads=heads)
         self.norm1 = LayerNorm(hidden_channels * heads)
-        self.conv2 = GATv2Conv(hidden_channels * heads, hidden_channels, heads=1)
-        self.norm2 = LayerNorm(hidden_channels)
+        self.conv2 = GATv2Conv(hidden_channels * heads, hidden_channels, heads=heads)
+        self.norm2 = LayerNorm(hidden_channels * heads)
+        self.conv3 = GATv2Conv(hidden_channels * heads, hidden_channels, heads=1)
+        self.norm3 = LayerNorm(hidden_channels)
         self.lin = torch.nn.Linear(hidden_channels, num_classes)
 
     def forward(self, x, edge_index, batch, return_attn=False, return_embedding=False):
@@ -33,6 +35,11 @@ class GATv2Classifier(torch.nn.Module):
 
         x, _ = self.conv2(x, edge_index, return_attention_weights=True)
         x = self.norm2(x)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+
+        x, _ = self.conv3(x, edge_index, return_attention_weights=True)
+        x = self.norm3(x)
         x = F.elu(x)
 
         embedding = global_mean_pool(x, batch)

@@ -22,10 +22,10 @@ def get_device() -> torch.device:
         return torch.device("mps")
     return torch.device("cpu")
 
-NUM_NODES = 500
+NUM_NODES = 1000
 CONFIDENCE_THRESHOLD = 200
 
-PROCESSED_DATASET_PATH = Path("./data/processed/")
+PROCESSED_DATASET_PATH = Path(__file__).resolve().parent.parent / "data" / "processed"
 
 # Active dataset. Switch this to point training/eval/visualization at a different
 # processed file without touching every script.

@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
+from torch.utils.data import WeightedRandomSampler
 from torch_geometric.loader import DataLoader
 
 from src.config import DATASET_FILE, PROCESSED_DATASET_PATH, get_device
@@ -25,7 +26,7 @@ BATCH_SIZE = 32
 NUM_EPOCHS = 500
 LEARNING_RATE = 1e-3
 WEIGHT_DECAY = 5e-4
-EARLY_STOP_PATIENCE = 30
+EARLY_STOP_PATIENCE = 50
 SEED = 42
 # TOIL dataset has ~1300 GTEx normal-skin samples, so the Normal class is learnable.
 DROP_NORMAL_CLASS = False
@@ -52,12 +53,24 @@ else:
 
 labels = np.array([int(d.y.item()) for d in dataset])
 
-# Stratified 70/15/15 split
-idx = np.arange(len(dataset))
-train_idx, temp_idx = train_test_split(idx, test_size=0.30, stratify=labels, random_state=SEED)
-val_idx, test_idx = train_test_split(
-    temp_idx, test_size=0.50, stratify=labels[temp_idx], random_state=SEED
-)
+# Prefer dataset-bundled splits (created by download_toil.py BEFORE gene
+# selection). Using these guarantees gene selection only saw train samples.
+BUNDLED_SPLITS = DATASET_FILE.with_suffix(".splits.npz")
+if BUNDLED_SPLITS.exists():
+    s = np.load(BUNDLED_SPLITS)
+    train_idx, val_idx, test_idx = s["train"], s["val"], s["test"]
+    print(f"Using bundled splits from {BUNDLED_SPLITS.name} (no leakage in gene selection)")
+else:
+    print(
+        f"WARNING: {BUNDLED_SPLITS.name} not found — falling back to in-script split.\n"
+        f"         Gene selection in download_toil.py may have seen test samples.\n"
+        f"         Re-run scripts.download_toil to regenerate."
+    )
+    idx = np.arange(len(dataset))
+    train_idx, temp_idx = train_test_split(idx, test_size=0.30, stratify=labels, random_state=SEED)
+    val_idx, test_idx = train_test_split(
+        temp_idx, test_size=0.50, stratify=labels[temp_idx], random_state=SEED
+    )
 train_set = [dataset[i] for i in train_idx]
 val_set = [dataset[i] for i in val_idx]
 test_set = [dataset[i] for i in test_idx]
@@ -69,7 +82,7 @@ print(f"  test classes:  {Counter(int(d.y.item()) for d in test_set)}")
 
 # Setup
 device = get_device()
-model = GATv2Classifier(hidden_channels=64, num_classes=NUM_CLASSES).to(device)
+model = GATv2Classifier(hidden_channels=128, num_classes=NUM_CLASSES).to(device)
 print(f"Device: {device}")
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -80,21 +93,28 @@ print(f"Run dir: {RUN_DIR}")
 # Save split indices for reproducibility / honest evaluation
 np.savez(RUN_DIR / "splits.npz", train=train_idx, val=val_idx, test=test_idx)
 
-train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
+# Balance classes per-batch via WeightedRandomSampler (train only).
+# Each sample's draw probability ∝ 1 / count(its class), so batches are
+# roughly class-balanced. Loss stays unweighted to avoid double-correcting.
+train_counts = Counter(int(d.y.item()) for d in train_set)
+sample_weights = [1.0 / train_counts[int(d.y.item())] for d in train_set]
+sampler = WeightedRandomSampler(
+    sample_weights, num_samples=len(train_set), replacement=True
+)
+# Sanity-check: draw one epoch's worth of indices and report the class mix
+_drawn = np.array([int(train_set[i].y.item()) for i in list(sampler)])
+print(f"Train class counts (raw):     {dict(train_counts)}")
+print(f"Per-epoch sampled class mix:  {dict(Counter(_drawn.tolist()))}")
+
+train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, sampler=sampler)
 val_loader = DataLoader(val_set, batch_size=BATCH_SIZE)
 test_loader = DataLoader(test_set, batch_size=BATCH_SIZE)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
-
-# Class weights from training set only (avoid leakage)
-train_counts = Counter(int(d.y.item()) for d in train_set)
-total = sum(train_counts.values())
-weights = torch.tensor(
-    [total / (NUM_CLASSES * train_counts[c]) for c in range(NUM_CLASSES)],
-    dtype=torch.float,
-).to(device)
-print(f"Class weights (from train): {weights.tolist()}")
-criterion = torch.nn.CrossEntropyLoss(weight=weights)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, mode="min", factor=0.5, patience=10, min_lr=1e-6
+)
+criterion = torch.nn.CrossEntropyLoss()
 
 
 def run_epoch(loader, train: bool):
@@ -131,6 +151,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
     val_loss, val_acc = run_epoch(val_loader, train=False)
     history.append((epoch, train_loss, train_acc, val_loss, val_acc))
 
+    scheduler.step(val_loss)
+    current_lr = optimizer.param_groups[0]["lr"]
+
     improved = val_loss < best_val_loss
     if improved:
         best_val_loss = val_loss
@@ -144,7 +167,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         flag = " *" if improved else ""
         print(
             f"Epoch {epoch:4d} | train loss {train_loss:.4f} acc {train_acc*100:5.2f}% "
-            f"| val loss {val_loss:.4f} acc {val_acc*100:5.2f}%{flag}"
+            f"| val loss {val_loss:.4f} acc {val_acc*100:5.2f}% | lr {current_lr:.2e}{flag}"
         )
 
     if patience >= EARLY_STOP_PATIENCE:

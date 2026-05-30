@@ -7,7 +7,7 @@ Usage: python3 predict.py
 import torch
 from pathlib import Path
 
-from src.config import DATASET_FILE, get_device
+from src.config import DATASET_FILE, PROCESSED_DATASET_PATH, get_device
 from src.model import load_model
 
 print("="*70)
@@ -22,7 +22,7 @@ print("\n📦 Loading trained model...")
 DATASET_PATH = DATASET_FILE
 
 # Find the most recent run
-model_dirs = sorted(Path('data/processed/').glob('run_*'), key=lambda p: p.stat().st_mtime)
+model_dirs = sorted(PROCESSED_DATASET_PATH.glob('run_*'), key=lambda p: p.stat().st_mtime)
 if not model_dirs:
     print("❌ No trained models found!")
     exit(1)

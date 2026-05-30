@@ -34,7 +34,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from src.config import CLASS_NAMES, DATASET_FILE, get_device
+from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH, get_device
 from src.model import load_model
 
 # ---------------------------------------------------------------------------
@@ -42,7 +42,7 @@ from src.model import load_model
 # ---------------------------------------------------------------------------
 parser = argparse.ArgumentParser()
 parser.add_argument("--run", type=Path, default=None,
-                    help="Training run directory. Defaults to most recent under data/processed/.")
+                    help="Training run directory. Defaults to most recent under PROCESSED_DATASET_PATH.")
 parser.add_argument("--split", choices=["test", "val", "train", "all"], default="test")
 parser.add_argument("--out", type=Path, default=Path("site"))
 parser.add_argument("--max-samples", type=int, default=None,
@@ -53,7 +53,7 @@ args = parser.parse_args()
 # Locate run + load
 # ---------------------------------------------------------------------------
 if args.run is None:
-    run_dirs = sorted(Path("data/processed/").glob("run_*"), key=lambda p: p.stat().st_mtime)
+    run_dirs = sorted(PROCESSED_DATASET_PATH.glob("run_*"), key=lambda p: p.stat().st_mtime)
     if not run_dirs:
         raise SystemExit("No training runs found.")
     run_dir = run_dirs[-1]

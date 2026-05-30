@@ -25,6 +25,26 @@ gat-project/
 Run commands as modules from the `gat-project/` directory:
 `python -m src.train`, `python -m src.evaluate`, `python -m scripts.download_toil`.
 
+## Common commands
+
+```bash
+pip install -r requirements.txt
+
+python -m scripts.download_toil       # build dataset (~3 GB cached)
+python -m src.train                   # train + save best checkpoint
+python -m src.evaluate                # held-out test metrics
+python -m src.predict                 # interactive CLI
+
+streamlit run scripts/explore_streamlit.py            # dataset explorer
+streamlit run scripts/predict_streamlit.py            # prediction UI
+streamlit run notebooks/explain_gat_interactive.py    # GAT tutorial
+python -m scripts.build_static_site                   # static site export
+python -m scripts.visualize_dataset                   # dataset plots
+```
+
+There is no test suite or linter wired up; correctness is checked by running
+`src.train` / `src.evaluate` end-to-end.
+
 ## Single source of truth
 
 - **Dataset path** lives in `src/config.py` as `DATASET_FILE`. Every script

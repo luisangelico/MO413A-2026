@@ -23,7 +23,7 @@ import plotly.graph_objects as go
 import streamlit as st
 import torch
 
-from src.config import CLASS_NAMES, DATASET_FILE, get_device
+from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH, get_device
 from src.model import load_model
 
 st.set_page_config(page_title="GAT Predictor", layout="wide")
@@ -34,9 +34,9 @@ st.title("🧬 GAT Predictor — attention-weighted predictions")
 # ----------------------------------------------------------------------------
 st.sidebar.header("Model & data")
 
-run_dirs = sorted(Path("data/processed/").glob("run_*"), key=lambda p: p.stat().st_mtime, reverse=True)
+run_dirs = sorted(PROCESSED_DATASET_PATH.glob("run_*"), key=lambda p: p.stat().st_mtime, reverse=True)
 if not run_dirs:
-    st.error("No trained model runs found in data/processed/run_*/. Train a model first.")
+    st.error(f"No trained model runs found in {PROCESSED_DATASET_PATH}/run_*/. Train a model first.")
     st.stop()
 
 run_label = st.sidebar.selectbox(
@@ -49,7 +49,7 @@ if not weights_path.exists():
     st.stop()
 
 st.sidebar.caption(f"Dataset: `{DATASET_FILE.name}`")
-st.sidebar.caption(f"Weights: `{weights_path.relative_to('data/processed')}`")
+st.sidebar.caption(f"Weights: `{weights_path.relative_to(PROCESSED_DATASET_PATH)}`")
 
 
 @st.cache_resource
