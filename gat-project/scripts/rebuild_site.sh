@@ -23,6 +23,24 @@ set -euo pipefail
 PROCESSED_DIR="${PROCESSED_DIR:-data/processed}"
 SITE_OUT="${SITE_OUT:-site}"
 
+# Resolve SITE_OUT relative to the repo root if it is a bare name like
+# "docs" or "site". build_static_site.py defaults to <repo-root>/docs/, so
+# normalize all output paths to that same root to keep trees in sync.
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PARENT_ROOT="$(cd "${REPO_ROOT}/.." && pwd)"
+case "${SITE_OUT}" in
+  /*) ;;  # already absolute
+  *)
+    if [[ -d "${PARENT_ROOT}/${SITE_OUT}" ]]; then
+      SITE_OUT="${PARENT_ROOT}/${SITE_OUT}"
+    else
+      SITE_OUT="${REPO_ROOT}/${SITE_OUT}"
+    fi
+    ;;
+esac
+echo "==> resolved SITE_OUT: ${SITE_OUT}"
+mkdir -p "${SITE_OUT}"
+
 # Locate the multiseed dir (latest by mtime if not provided).
 if [[ -z "${MULTISEED:-}" ]]; then
   MULTISEED=$(ls -dt "${PROCESSED_DIR}"/multiseed_* 2>/dev/null | head -n 1 || true)
@@ -95,12 +113,16 @@ echo
 echo "==> python -m src.multiseed_stability --dir ${MULTISEED}"
 python -m src.multiseed_stability --dir "${MULTISEED}"
 
-# (multiseed_stability writes site/stability.html into <repo>/site by default;
-#  if SITE_OUT is different, copy it across so all links resolve in one place.)
-if [[ "${SITE_OUT}" != "site" && -f "site/stability.html" ]]; then
-  mkdir -p "${SITE_OUT}"
-  cp -f site/stability.html "${SITE_OUT}/stability.html"
-  echo "==> copied site/stability.html -> ${SITE_OUT}/stability.html"
+echo
+echo "==> python -m scripts.biomarker_report --run ${MULTISEED}"
+python -m scripts.biomarker_report --run "${MULTISEED}" --out "${SITE_OUT}/biomarkers.html"
+
+# multiseed_stability writes stability.html into <repo>/site by default.
+# If SITE_OUT is different, mirror it across so the link bar resolves.
+DEFAULT_STAB="${REPO_ROOT}/site/stability.html"
+if [[ "${SITE_OUT}" != "${REPO_ROOT}/site" && -f "${DEFAULT_STAB}" ]]; then
+  cp -f "${DEFAULT_STAB}" "${SITE_OUT}/stability.html"
+  echo "==> copied ${DEFAULT_STAB} -> ${SITE_OUT}/stability.html"
 fi
 
 # ---------- 5. Build the predictions site ------------------------------------

@@ -51,8 +51,11 @@ parser.add_argument("--run", type=Path, default=None,
 parser.add_argument("--top-k", type=int, default=40,
                     help="Number of top-spread edges to show in the heatmap.")
 parser.add_argument("--out", type=Path,
-                    default=Path(__file__).resolve().parent.parent.parent / "docs" / "biomarkers.html")
+                    default=None,
+                    help="Output HTML path. Default: <repo-root>/docs/biomarkers.html")
 args = parser.parse_args()
+if args.out is None:
+    args.out = Path(__file__).resolve().parent.parent.parent / "docs" / "biomarkers.html"
 
 if args.run is None:
     runs = sorted(PROCESSED_DATASET_PATH.glob("multiseed_*"), key=lambda p: p.stat().st_mtime)
