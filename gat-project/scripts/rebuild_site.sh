@@ -104,26 +104,23 @@ echo "==> [4/5] python -m src.embeddings"
 python -m src.embeddings --site-dir "${SITE_OUT}"
 
 echo
-echo "==> [5/5] python -m src.pseudotime"
+echo "==> [5/6] python -m src.pseudotime"
 python -m src.pseudotime --site-dir "${SITE_OUT}"
+
+echo
+echo "==> [6/6] python -m src.dataset_page"
+python -m src.dataset_page --site-dir "${SITE_OUT}"
 
 # ---------- 4. Cross-seed stability ------------------------------------------
 
 echo
 echo "==> python -m src.multiseed_stability --dir ${MULTISEED}"
-python -m src.multiseed_stability --dir "${MULTISEED}"
+python -m src.multiseed_stability --dir "${MULTISEED}" --site-dir "${SITE_OUT}"
 
 echo
 echo "==> python -m scripts.biomarker_report --run ${MULTISEED}"
 python -m scripts.biomarker_report --run "${MULTISEED}" --out "${SITE_OUT}/biomarkers.html"
 
-# multiseed_stability writes stability.html into <repo>/site by default.
-# If SITE_OUT is different, mirror it across so the link bar resolves.
-DEFAULT_STAB="${REPO_ROOT}/site/stability.html"
-if [[ "${SITE_OUT}" != "${REPO_ROOT}/site" && -f "${DEFAULT_STAB}" ]]; then
-  cp -f "${DEFAULT_STAB}" "${SITE_OUT}/stability.html"
-  echo "==> copied ${DEFAULT_STAB} -> ${SITE_OUT}/stability.html"
-fi
 
 # ---------- 5. Build the predictions site ------------------------------------
 

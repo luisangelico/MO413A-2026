@@ -638,6 +638,7 @@ index = f"""<!doctype html>
   <h1>GAT melanoma predictor — predictions</h1>
   <div>Run: <code>{htmllib.escape(run_dir.name)}</code> · split: <strong>{args.split}</strong> ·
        <a href="overview.html">run overview</a> ·
+       <a href="dataset.html">dataset</a> ·
        <a href="interpret/index.html">attention interpretability</a> ·
        <a href="embeddings.html">embeddings</a> ·
        <a href="pseudotime.html">pseudotime</a> ·

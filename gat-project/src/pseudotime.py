@@ -283,7 +283,7 @@ def write_html(meta: pd.DataFrame, pseudotime: np.ndarray, bin_counts: np.ndarra
   at normal-like samples, and stopped caring as samples became more
   tumor-like." The reverse pattern points the other way.
 </p>
-<img src="../data/processed/{run_name}/figures/pseudotime_heatmap.png"
+<img src="pseudotime_heatmap.png"
      alt="Per-decile mean attention heatmap">
 
 <h2>Selected gene trajectories</h2>
@@ -298,7 +298,7 @@ def write_html(meta: pd.DataFrame, pseudotime: np.ndarray, bin_counts: np.ndarra
   <span><span class="swatch" style="background:#2ca02c"></span>immune infiltrate</span>
   <span><span class="swatch" style="background:#1f77b4"></span>keratin / skin normal</span>
 </div>
-<img src="../data/processed/{run_name}/figures/pseudotime_lines.png"
+<img src="pseudotime_lines.png"
      alt="Selected gene trajectories">
 
 <h2>Why does this matter?</h2>
@@ -393,6 +393,13 @@ def main():
     out_html = site_dir / "pseudotime.html"
     write_html(meta_c, pseudotime, bin_counts, out_html, run_dir.name)
     print(f"Saved: {out_html}")
+
+    # Copy figures next to the HTML so paths are self-contained.
+    import shutil
+    for fname in ("pseudotime_heatmap.png", "pseudotime_lines.png"):
+        src = fig_dir / fname
+        if src.exists():
+            shutil.copyfile(src, site_dir / fname)
 
 
 if __name__ == "__main__":

@@ -380,6 +380,8 @@ def main():
     ap.add_argument("--dir", type=str, default=None)
     ap.add_argument("--top-k", type=int, default=50,
                     help="Top-K for Jaccard overlap and consensus table")
+    ap.add_argument("--site-dir", type=str, default=None,
+                    help="Default: <repo>/site")
     args = ap.parse_args()
 
     ms_dir = _resolve_dir(args.dir)
@@ -536,10 +538,19 @@ def main():
     print(f"Saved: {fig_dir / 'stability_accuracy.png'}")
 
     # Site page
-    site_dir = Path(__file__).resolve().parent.parent / "site"
+    site_dir = Path(args.site_dir) if args.site_dir else (
+        Path(__file__).resolve().parent.parent / "site")
     site_dir.mkdir(parents=True, exist_ok=True)
     write_site_page(ms_dir, summary, site_dir / "stability.html")
     print(f"Saved: {site_dir / 'stability.html'}")
+
+    # Copy figures next to the HTML so paths are self-contained.
+    import shutil
+    for fname in ("stability_accuracy.png", "stability_spearman.png",
+                  "stability_knn_jaccard.png", "stability_pseudotime.png"):
+        src = fig_dir / fname
+        if src.exists():
+            shutil.copyfile(src, site_dir / fname)
 
 
 def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
@@ -573,7 +584,7 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
   <li><strong>Procrustes disparity:</strong>
       {emb['procrustes_mean_disparity']:.4f} (0 = identical up to rotation/scale).</li>
 </ul>
-<img src="../data/processed/{run_name}/figures/stability_knn_jaccard.png"
+<img src="stability_knn_jaccard.png"
      alt="Per-sample kNN Jaccard across seeds, by class">
 """
 
@@ -593,7 +604,7 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
       median = {pt['median_std']:.3f}, max = {pt['max_std']:.3f}
       (on a 0–1 axis).</li>
 </ul>
-<img src="../data/processed/{run_name}/figures/stability_pseudotime.png"
+<img src="stability_pseudotime.png"
      alt="Per-sample pseudotime across seeds">
 """
 
@@ -642,7 +653,7 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
       (range {acc['min']*100:.2f}–{acc['max']*100:.2f}%, 95% CI half-width
       ≈ {acc['ci95_half_width']*100:.2f}%).</li>
 </ul>
-<img src="../data/processed/{run_name}/figures/stability_accuracy.png"
+<img src="stability_accuracy.png"
      alt="Per-seed accuracy and per-class F1">
 
 <h2>2. Attention-ranking stability</h2>
@@ -660,7 +671,7 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
 <tr><th>ranking</th><th>Spearman ρ</th><th>top-50 Jaccard</th></tr>
 {rk_rows}
 </table>
-<img src="../data/processed/{run_name}/figures/stability_spearman.png"
+<img src="stability_spearman.png"
      alt="Cross-seed Spearman heatmap per ranking">
 
 <div class="callout">
