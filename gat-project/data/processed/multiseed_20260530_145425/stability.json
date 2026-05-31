@@ -30,45 +30,45 @@
   },
   "rankings": {
     "Primary Tumor": {
-      "spearman_mean": 0.010117759926471665,
-      "spearman_std": 0.06711526261058343,
-      "top50_jaccard_mean": 0.1897198406337941,
-      "top50_jaccard_std": 0.02811467408882972
+      "spearman_mean": 0.006005662514603875,
+      "spearman_std": 0.06112787902906749,
+      "top50_jaccard_mean": 0.18293436022885542,
+      "top50_jaccard_std": 0.0327150471308058
     },
     "Metastasis": {
-      "spearman_mean": 0.055163731853951584,
-      "spearman_std": 0.06920588125553935,
-      "top50_jaccard_mean": 0.22504725126091815,
-      "top50_jaccard_std": 0.05635758332838263
+      "spearman_mean": 0.07159148882760036,
+      "spearman_std": 0.07087681655234904,
+      "top50_jaccard_mean": 0.23268780067484793,
+      "top50_jaccard_std": 0.03798922741419522
     },
     "Normal Tissue": {
-      "spearman_mean": 0.05136420908249493,
-      "spearman_std": 0.06872464653414624,
-      "top50_jaccard_mean": 0.2029107143842553,
-      "top50_jaccard_std": 0.03425515640694085
+      "spearman_mean": -0.044813395794514065,
+      "spearman_std": 0.053924066319855066,
+      "top50_jaccard_mean": 0.17629514241654304,
+      "top50_jaccard_std": 0.03754952419196479
     },
     "Tumor - Normal": {
-      "spearman_mean": 0.0377867084186107,
-      "spearman_std": 0.08699024661283075,
-      "top50_jaccard_mean": 0.18506302225237706,
-      "top50_jaccard_std": 0.043928053445048396
+      "spearman_mean": 0.036728304520067624,
+      "spearman_std": 0.0831590262960064,
+      "top50_jaccard_mean": 0.1940495464693689,
+      "top50_jaccard_std": 0.02939107325547672
     },
     "Metastasis - Primary": {
-      "spearman_mean": -0.0005091037051908182,
-      "spearman_std": 0.06196279399575319,
-      "top50_jaccard_mean": 0.1923880919117814,
-      "top50_jaccard_std": 0.024332842534459692
+      "spearman_mean": -0.006180819302796603,
+      "spearman_std": 0.06327892603612192,
+      "top50_jaccard_mean": 0.18799031418822731,
+      "top50_jaccard_std": 0.04622141726194984
     }
   },
   "embedding": {
     "knn_jaccard_k10_mean": 0.46300053277346787,
     "knn_jaccard_k10_std": 0.11828737937041404,
-    "procrustes_mean_disparity": 0.046664402592196834,
+    "procrustes_mean_disparity": 0.04666439264338883,
     "n_common_samples": 193
   },
   "pseudotime": {
-    "mean_std": 0.04905097202140588,
-    "median_std": 0.03849259066938276,
-    "max_std": 0.13191956144092173
+    "mean_std": 0.04905096620666027,
+    "median_std": 0.038492590618875853,
+    "max_std": 0.1319195878395148
   }
 }

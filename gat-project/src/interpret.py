@@ -175,8 +175,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", type=str, default=None,
                     help="run_* directory; default = latest")
-    ap.add_argument("--split", choices=["test", "all"], default="test",
-                    help="which split to interpret (default: test)")
+    ap.add_argument("--split", choices=["test", "all"], default="all",
+                    help="which split to interpret (default: all)")
     ap.add_argument("--correct-only", action="store_true", default=True)
     args = ap.parse_args()
 

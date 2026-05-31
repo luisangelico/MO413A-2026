@@ -2,14 +2,14 @@ gene_set,ranking,k,hits,set_size_in_panel,pvalue
 melanocyte_lineage,Primary Tumor,10,0,4,1.0
 melanocyte_lineage,Primary Tumor,25,0,4,1.0
 melanocyte_lineage,Primary Tumor,50,0,4,1.0
-melanocyte_lineage,Primary Tumor,100,2,4,0.05195854946449415
+melanocyte_lineage,Primary Tumor,100,3,4,0.003608440371032757
 melanocyte_lineage,Metastasis,10,0,4,1.0
 melanocyte_lineage,Metastasis,25,0,4,1.0
-melanocyte_lineage,Metastasis,50,0,4,1.0
-melanocyte_lineage,Metastasis,100,0,4,1.0
+melanocyte_lineage,Metastasis,50,1,4,0.18575153928327678
+melanocyte_lineage,Metastasis,100,3,4,0.003608440371032757
 melanocyte_lineage,Normal Tissue,10,0,4,1.0
-melanocyte_lineage,Normal Tissue,25,1,4,0.0964514569544087
-melanocyte_lineage,Normal Tissue,50,1,4,0.18575153928327678
+melanocyte_lineage,Normal Tissue,25,0,4,1.0
+melanocyte_lineage,Normal Tissue,50,0,4,1.0
 melanocyte_lineage,Normal Tissue,100,1,4,0.3443383337468398
 melanocyte_lineage,Metastasis - Primary,10,0,4,1.0
 melanocyte_lineage,Metastasis - Primary,25,0,4,1.0
@@ -17,8 +17,8 @@ melanocyte_lineage,Metastasis - Primary,50,0,4,1.0
 melanocyte_lineage,Metastasis - Primary,100,1,4,0.3443383337468398
 melanocyte_lineage,Tumor - Normal,10,0,4,1.0
 melanocyte_lineage,Tumor - Normal,25,0,4,1.0
-melanocyte_lineage,Tumor - Normal,50,0,4,1.0
-melanocyte_lineage,Tumor - Normal,100,1,4,0.3443383337468398
+melanocyte_lineage,Tumor - Normal,50,1,4,0.18575153928327678
+melanocyte_lineage,Tumor - Normal,100,3,4,0.003608440371032757
 melanocyte_lineage,[baseline] node degree,10,0,4,1.0
 melanocyte_lineage,[baseline] node degree,25,0,4,1.0
 melanocyte_lineage,[baseline] node degree,50,0,4,1.0
@@ -48,49 +48,49 @@ melanoma_progression,[baseline] node degree,25,0,1,1.0
 melanoma_progression,[baseline] node degree,50,0,1,1.0
 melanoma_progression,[baseline] node degree,100,0,1,1.0
 immune_infiltrate,Primary Tumor,10,0,2,1.0
-immune_infiltrate,Primary Tumor,25,0,2,1.0
-immune_infiltrate,Primary Tumor,50,0,2,1.0
-immune_infiltrate,Primary Tumor,100,0,2,1.0
+immune_infiltrate,Primary Tumor,25,1,2,0.049399399399399406
+immune_infiltrate,Primary Tumor,50,1,2,0.09754754754754755
+immune_infiltrate,Primary Tumor,100,2,2,0.00990990990990991
 immune_infiltrate,Metastasis,10,0,2,1.0
-immune_infiltrate,Metastasis,25,1,2,0.049399399399399406
+immune_infiltrate,Metastasis,25,0,2,1.0
 immune_infiltrate,Metastasis,50,1,2,0.09754754754754755
 immune_infiltrate,Metastasis,100,2,2,0.00990990990990991
 immune_infiltrate,Normal Tissue,10,0,2,1.0
 immune_infiltrate,Normal Tissue,25,0,2,1.0
-immune_infiltrate,Normal Tissue,50,0,2,1.0
+immune_infiltrate,Normal Tissue,50,1,2,0.09754754754754755
 immune_infiltrate,Normal Tissue,100,1,2,0.1900900900900901
 immune_infiltrate,Metastasis - Primary,10,0,2,1.0
 immune_infiltrate,Metastasis - Primary,25,0,2,1.0
-immune_infiltrate,Metastasis - Primary,50,1,2,0.09754754754754755
-immune_infiltrate,Metastasis - Primary,100,2,2,0.00990990990990991
+immune_infiltrate,Metastasis - Primary,50,0,2,1.0
+immune_infiltrate,Metastasis - Primary,100,0,2,1.0
 immune_infiltrate,Tumor - Normal,10,0,2,1.0
 immune_infiltrate,Tumor - Normal,25,0,2,1.0
-immune_infiltrate,Tumor - Normal,50,0,2,1.0
-immune_infiltrate,Tumor - Normal,100,1,2,0.1900900900900901
+immune_infiltrate,Tumor - Normal,50,2,2,0.0024524524524524526
+immune_infiltrate,Tumor - Normal,100,2,2,0.00990990990990991
 immune_infiltrate,[baseline] node degree,10,0,2,1.0
 immune_infiltrate,[baseline] node degree,25,0,2,1.0
 immune_infiltrate,[baseline] node degree,50,2,2,0.0024524524524524526
 immune_infiltrate,[baseline] node degree,100,2,2,0.00990990990990991
-keratin_skin_normal,Primary Tumor,10,1,8,0.077517565500864
-keratin_skin_normal,Primary Tumor,25,1,8,0.1839372839818034
-keratin_skin_normal,Primary Tumor,50,1,8,0.3375615594600195
-keratin_skin_normal,Primary Tumor,100,3,8,0.037444442951722494
+keratin_skin_normal,Primary Tumor,10,0,8,1.0
+keratin_skin_normal,Primary Tumor,25,0,8,1.0
+keratin_skin_normal,Primary Tumor,50,2,8,0.05656964406660249
+keratin_skin_normal,Primary Tumor,100,5,8,0.0003986635044342289
 keratin_skin_normal,Metastasis,10,0,8,1.0
 keratin_skin_normal,Metastasis,25,0,8,1.0
-keratin_skin_normal,Metastasis,50,1,8,0.3375615594600195
+keratin_skin_normal,Metastasis,50,0,8,1.0
 keratin_skin_normal,Metastasis,100,2,8,0.18644435495120795
-keratin_skin_normal,Normal Tissue,10,0,8,1.0
-keratin_skin_normal,Normal Tissue,25,2,8,0.015329284804490034
+keratin_skin_normal,Normal Tissue,10,2,8,0.0024426979933045868
+keratin_skin_normal,Normal Tissue,25,3,8,0.0007131115011935219
 keratin_skin_normal,Normal Tissue,50,3,8,0.005520795030616263
 keratin_skin_normal,Normal Tissue,100,5,8,0.0003986635044342289
 keratin_skin_normal,Metastasis - Primary,10,0,8,1.0
-keratin_skin_normal,Metastasis - Primary,25,1,8,0.1839372839818034
-keratin_skin_normal,Metastasis - Primary,50,3,8,0.005520795030616263
-keratin_skin_normal,Metastasis - Primary,100,4,8,0.004814294625578196
+keratin_skin_normal,Metastasis - Primary,25,0,8,1.0
+keratin_skin_normal,Metastasis - Primary,50,1,8,0.3375615594600195
+keratin_skin_normal,Metastasis - Primary,100,2,8,0.18644435495120795
 keratin_skin_normal,Tumor - Normal,10,0,8,1.0
-keratin_skin_normal,Tumor - Normal,25,0,8,1.0
+keratin_skin_normal,Tumor - Normal,25,1,8,0.1839372839818034
 keratin_skin_normal,Tumor - Normal,50,1,8,0.3375615594600195
-keratin_skin_normal,Tumor - Normal,100,2,8,0.18644435495120795
+keratin_skin_normal,Tumor - Normal,100,4,8,0.004814294625578196
 keratin_skin_normal,[baseline] node degree,10,1,8,0.077517565500864
 keratin_skin_normal,[baseline] node degree,25,2,8,0.015329284804490034
 keratin_skin_normal,[baseline] node degree,50,3,8,0.005520795030616263

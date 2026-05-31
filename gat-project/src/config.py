@@ -17,9 +17,20 @@ def get_device() -> torch.device:
     if override:
         return torch.device(override)
     if torch.cuda.is_available():
-        return torch.device("cuda")
+        try:
+            # Test if CUDA is actually functional on this hardware
+            torch.zeros(1, device="cuda")
+            return torch.device("cuda")
+        except Exception:
+            # CUDA is present but unusable (e.g. incompatible GPU capability)
+            pass
     if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return torch.device("mps")
+        try:
+            # Test if MPS is actually functional
+            torch.zeros(1, device="mps")
+            return torch.device("mps")
+        except Exception:
+            pass
     return torch.device("cpu")
 
 NUM_NODES = 1000

@@ -43,7 +43,7 @@ from src.model import load_model
 parser = argparse.ArgumentParser()
 parser.add_argument("--run", type=Path, default=None,
                     help="Training run directory. Defaults to most recent under PROCESSED_DATASET_PATH.")
-parser.add_argument("--split", choices=["test", "val", "train", "all"], default="test")
+parser.add_argument("--split", choices=["test", "val", "train", "all"], default="all")
 parser.add_argument("--out", type=Path,
                     default=Path(__file__).resolve().parent.parent.parent / "docs",
                     help="Output directory. Defaults to <repo-root>/docs (GitHub Pages source).")
@@ -107,9 +107,10 @@ print(f"Building pages for {len(selected)} samples (split={args.split}).")
 train_idxs = [i for i in valid_idx if split_of.get(i) == "train"]
 train_embeddings = None
 if train_idxs:
+    from tqdm import tqdm
     print(f"Computing embeddings for {len(train_idxs)} training samples...")
     embs = []
-    for i in train_idxs:
+    for i in tqdm(train_idxs, desc="Computing embeddings"):
         s = dataset[i].to(device)
         b = torch.zeros(s.x.size(0), dtype=torch.long, device=device)
         with torch.no_grad():
@@ -175,7 +176,7 @@ attn_sum_by_class = {c: None for c in range(num_classes)}  # class -> np.ndarray
 attn_count_by_class = {c: 0 for c in range(num_classes)}
 shared_edges = None  # captured once
 
-for idx in selected:
+for idx in tqdm(selected, desc="Building per-sample pages"):
     sample = dataset[idx].to(device)
     batch = torch.zeros(sample.x.size(0), dtype=torch.long, device=device)
     with torch.no_grad():
@@ -647,7 +648,7 @@ index = f"""<!doctype html>
 {render_header("predictions", subtitle=f"Run: <code>{htmllib.escape(run_dir.name)}</code> · split: <strong>{args.split}</strong>")}
 <div class="page">
 <div class="page-header">
-  <h2>Test-set predictions</h2>
+  <h2>Model predictions</h2>
   <div class="meta">Click any row to inspect the per-sample graph and nearest training neighbors.</div>
 </div>
 <div class="metric-row">
@@ -658,6 +659,12 @@ index = f"""<!doctype html>
   <input class="search" id="q" placeholder="search id…">
   <select id="cls"><option value="">all classes</option>{"".join(f'<option>{class_names[i]}</option>' for i in range(num_classes))}</select>
   <select id="ok"><option value="">all</option><option value="true">correct only</option><option value="false">incorrect only</option></select>
+  <select id="split">
+    <option value="all">all splits</option>
+    <option value="train" selected>train only</option>
+    <option value="test">test only</option>
+    <option value="validation">validation only</option>
+  </select>
 </div>
 <table id="t">
   <thead>
@@ -666,6 +673,7 @@ index = f"""<!doctype html>
       <th data-k="id">patient id</th>
       <th data-k="true">true</th>
       <th data-k="pred">predicted</th>
+      <th data-k="split">split</th>
       <th data-k="conf">confidence</th>
       <th data-k="ok">correct?</th>
     </tr>
@@ -679,15 +687,18 @@ const body = document.querySelector("#t tbody");
 const q = document.querySelector("#q");
 const cls = document.querySelector("#cls");
 const ok = document.querySelector("#ok");
+const split = document.querySelector("#split");
 
 function render() {{
   const qv = q.value.toLowerCase();
   const clsv = cls.value;
   const okv = ok.value;
+  const splitv = split.value;
   let rows = data.filter(r =>
     (!qv || r.id.toLowerCase().includes(qv)) &&
     (!clsv || r.true === clsv) &&
-    (!okv || String(r.ok) === okv)
+    (!okv || String(r.ok) === okv) &&
+    (splitv === "all" || (splitv === "validation" ? r.split === "val" : r.split === splitv))
   );
   rows.sort((a,b) => {{
     const av = a[sortKey], bv = b[sortKey];
@@ -701,6 +712,7 @@ function render() {{
       <td>${{r.id}}</td>
       <td>${{r.true}}</td>
       <td>${{r.pred}}</td>
+      <td>${{r.split === "val" ? "validation" : r.split}}</td>
       <td>${{(r.conf*100).toFixed(1)}}%</td>
       <td>${{r.ok ? '<span style="color:#2ca02c">✓</span>' : '<span style="color:#d62728">✗</span>'}}</td>
     </tr>`).join("");
@@ -711,7 +723,7 @@ document.querySelectorAll("th").forEach(th => th.onclick = () => {{
   if (sortKey === k) sortAsc = !sortAsc; else {{ sortKey = k; sortAsc = true; }}
   render();
 }});
-[q, cls, ok].forEach(el => el.oninput = render);
+[q, cls, ok, split].forEach(el => el.oninput = render);
 render();
 </script>
 </div>

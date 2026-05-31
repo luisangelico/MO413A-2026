@@ -429,7 +429,7 @@ render();
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", type=str, default=None)
-    ap.add_argument("--split", choices=["test", "val", "train", "all"], default="test")
+    ap.add_argument("--split", choices=["test", "val", "train", "all"], default="all")
     ap.add_argument("--k", type=int, default=10, help="Nearest-neighbor count")
     ap.add_argument("--site-dir", type=str, default=None,
                     help="Where to write embeddings.html (default: <repo>/site)")
