@@ -29,6 +29,7 @@ import torch
 
 from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH
 from src.interpret import GENE_SETS
+from src.site_header import HEADER_CSS, render_header
 
 
 GENE_SET_COLORS = {
@@ -314,11 +315,13 @@ def write_subgraph_index(out_dir: Path, html_paths: list[Path], run_name: str) -
         for p in html_paths
     )
     html = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>GAT attention — interpretability</title>
+<html><head><meta charset="utf-8"><title>Interpretability — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body {{ font-family: -apple-system, system-ui, sans-serif; max-width: 820px;
-          margin: 2em auto; color: #222; padding: 0 1em; line-height: 1.55; }}
-  h1 {{ font-size: 1.5em; margin-bottom: 0.2em; }}
+{HEADER_CSS}
+  body {{ font-family: -apple-system, system-ui, sans-serif; margin: 0;
+          color: #222; line-height: 1.55; }}
+  .page {{ max-width: 820px; margin: 0 auto; padding: 0 1em 2em; }}
+  h1 {{ font-size: 1.5em; margin: 0.4em 0 0.2em; }}
   h2 {{ font-size: 1.1em; margin-top: 1.8em; color: #333; }}
   .meta {{ color: #666; font-size: 0.9em; }}
   ul {{ line-height: 1.9; }} a {{ color: #1f77b4; text-decoration: none; }}
@@ -335,11 +338,10 @@ def write_subgraph_index(out_dir: Path, html_paths: list[Path], run_name: str) -
                text-decoration: none; font-size: 0.9em; }}
   .back-btn:hover {{ background: #155a8a; text-decoration: none; }}
 </style></head><body>
-
-<a href="../index.html" class="back-btn">&larr; back to predictions site</a>
+{render_header("interpret", subtitle=f"Run: <code>{run_name}</code>", prefix="../")}
+<div class="page">
 
 <h1>GAT attention — top-30 PPI subgraphs by class</h1>
-<p class="meta">Run: <code>{run_name}</code></p>
 
 <h2>What you're looking at</h2>
 <p>
@@ -440,6 +442,7 @@ def write_subgraph_index(out_dir: Path, html_paths: list[Path], run_name: str) -
 gene-set enrichment heatmap, matplotlib subgraphs) are saved alongside the model
 in <code>data/processed/{run_name}/figures/</code>.</p>
 
+</div>
 </body></html>
 """
     idx = out_dir / "index.html"

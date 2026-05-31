@@ -108,8 +108,12 @@ echo "==> [5/6] python -m src.pseudotime"
 python -m src.pseudotime --site-dir "${SITE_OUT}"
 
 echo
-echo "==> [6/6] python -m src.dataset_page"
+echo "==> [6/7] python -m src.dataset_page"
 python -m src.dataset_page --site-dir "${SITE_OUT}"
+
+echo
+echo "==> [7/7] python -m src.about_gat_page"
+python -m src.about_gat_page --site-dir "${SITE_OUT}"
 
 # ---------- 4. Cross-seed stability ------------------------------------------
 

@@ -24,6 +24,7 @@ import torch
 from sklearn.decomposition import PCA
 
 from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH
+from src.site_header import HEADER_CSS, render_header
 
 
 COLORS = {0: "#d62728", 1: "#ff7f0e", 2: "#2ca02c"}
@@ -163,6 +164,100 @@ def make_ppi_figure(dataset, X: np.ndarray, out_path: Path) -> None:
     plt.close(fig)
 
 
+def make_ppi_interactive(dataset, X: np.ndarray, out_path: Path,
+                         min_degree: int = 1, label_top: int = 50) -> int:
+    """Build an interactive pyvis PPI graph. Returns number of nodes rendered.
+
+    Drops nodes with degree < min_degree to keep the layout legible.
+    Only the top `label_top` hubs are labeled by default — others show their
+    name on hover.
+    """
+    from pyvis.network import Network
+    import matplotlib.colors as mcolors
+    import matplotlib.cm as cm
+
+    sample0 = dataset[0]
+    n_nodes = sample0.x.shape[0]
+    gene_names = getattr(sample0, "gene_names", [str(i) for i in range(n_nodes)])
+    mean_expr = X.mean(axis=0)
+
+    G = nx.Graph()
+    G.add_nodes_from(range(n_nodes))
+    edges_np = sample0.edge_index.numpy()
+    for k in range(edges_np.shape[1]):
+        s, d = int(edges_np[0, k]), int(edges_np[1, k])
+        if s != d:
+            G.add_edge(s, d)
+    # Drop low-degree nodes for legibility
+    G.remove_nodes_from([n for n in G.nodes() if G.degree(n) < min_degree])
+    if G.number_of_nodes() == 0:
+        out_path.write_text("<html><body>Empty graph.</body></html>")
+        return 0
+
+    nodes = list(G.nodes())
+    degrees = np.array([G.degree(n) for n in nodes])
+    node_expr = np.array([mean_expr[n] for n in nodes])
+
+    # Color = mean expression, viridis colormap
+    expr_norm = mcolors.Normalize(vmin=float(node_expr.min()),
+                                  vmax=float(node_expr.max()))
+    cmap = cm.get_cmap("viridis")
+
+    # Top-N hubs get visible labels
+    top_idx = set(int(i) for i in np.argsort(-degrees)[:label_top])
+
+    net = Network(height="700px", width="100%", bgcolor="#ffffff",
+                  font_color="#222", notebook=False, directed=False)
+    net.toggle_physics(True)
+
+    smin, smax = float(degrees.min()), float(degrees.max())
+    for i, n in enumerate(nodes):
+        gene = gene_names[n]
+        d = float(node_expr[i])
+        deg = int(degrees[i])
+        r_, g_, b_, _ = cmap(expr_norm(d))
+        color = mcolors.to_hex((r_, g_, b_))
+        size = 6 + 30 * (deg - smin) / max(smax - smin, 1e-9)
+        title = (f"{gene}\n"
+                 f"degree (PPI partners): {deg}\n"
+                 f"mean expression: {d:.2f}")
+        # Show label only for hubs; others get blank label but full hover info
+        label = gene if i in top_idx else ""
+        net.add_node(int(n), label=label, title=title,
+                     color=color, size=size)
+    for u, v in G.edges():
+        net.add_edge(int(u), int(v), color="#cccccc", width=0.6)
+
+    net.set_options("""
+    {
+      "physics": {
+        "barnesHut": {"gravitationalConstant": -3000, "springLength": 90,
+                      "centralGravity": 0.2, "damping": 0.4},
+        "minVelocity": 0.75,
+        "stabilization": {"iterations": 200}
+      },
+      "interaction": {"hover": true, "tooltipDelay": 100, "navigationButtons": true}
+    }
+    """)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    net.write_html(str(out_path), open_browser=False, notebook=False)
+
+    # Inject a small explanatory header
+    raw = out_path.read_text()
+    header = f"""
+<div style="font-family:-apple-system,system-ui,sans-serif;max-width:1100px;
+            margin:0.6em auto;padding:0.4em 1em;color:#444;font-size:0.88em;line-height:1.4;">
+  <strong>{G.number_of_nodes()} genes</strong>, {G.number_of_edges()} STRING physical PPIs
+  (confidence ≥ 200). Drag nodes; scroll to zoom; hover for gene name, degree,
+  and mean expression. Top {label_top} hubs are pre-labeled; others appear on hover.
+  Node size = number of PPI partners. Node color = mean expression across the cohort.
+</div>
+"""
+    raw = raw.replace("<body>", "<body>" + header, 1)
+    out_path.write_text(raw)
+    return G.number_of_nodes()
+
+
 def write_html(stats: dict, out_path: Path, run_name: str,
                figures_rel_prefix: str) -> None:
     cls = stats["class_counts"]
@@ -170,15 +265,13 @@ def write_html(stats: dict, out_path: Path, run_name: str,
         f"<tr><td>{name}</td><td>{count}</td></tr>" for name, count in cls.items()
     )
     html = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Dataset — sources and structure</title>
+<html><head><meta charset="utf-8"><title>Dataset — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body {{ font-family:-apple-system,system-ui,sans-serif; max-width:920px;
-          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }}
-  .back-btn {{ display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
-               background:#1f77b4; color:white !important; border-radius:5px;
-               text-decoration:none; font-size:0.9em; }}
-  .back-btn:hover {{ background:#155a8a; }}
-  h1 {{ font-size:1.5em; }} h2 {{ font-size:1.15em; margin-top:1.6em; }}
+{HEADER_CSS}
+  body {{ font-family:-apple-system,system-ui,sans-serif; margin:0; color:#222;
+          line-height:1.6; }}
+  .page {{ max-width:920px; margin:0 auto; padding:0 1em 2em; }}
+  h1 {{ font-size:1.5em; margin-top:0.4em; }} h2 {{ font-size:1.15em; margin-top:1.6em; }}
   .meta {{ color:#666; font-size:0.9em; }}
   .plain {{ background:#f6fbf7; border-left:3px solid #2ca02c;
             padding:0.7em 1em; margin:1em 0; }}
@@ -197,11 +290,10 @@ def write_html(stats: dict, out_path: Path, run_name: str,
                border-radius:8px; padding:0.9em 1em; }}
   .src-card h3 {{ margin:0 0 0.3em 0; font-size:1em; }}
 </style></head><body>
-
-<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+{render_header("dataset", subtitle=f"Dataset file: <code>{DATASET_FILE.name}</code> · run: <code>{run_name}</code>")}
+<div class="page">
 
 <h1>Where the data comes from</h1>
-<p class="meta">Dataset file: <code>{DATASET_FILE.name}</code> · run: <code>{run_name}</code></p>
 
 <div class="plain">
   <strong>In one sentence.</strong> Every sample in this project is a
@@ -289,12 +381,13 @@ def write_html(stats: dict, out_path: Path, run_name: str,
 </ul>
 <img src="{figures_rel_prefix}dataset_overview.png" alt="Dataset overview">
 
-<h2>The PPI graph itself</h2>
+<h2>The PPI graph — interactive</h2>
 <p>
   Force-directed layout of the same PPI network used in every sample's
-  graph. Node color = average expression across all samples in the
-  cohort (blue → yellow); node size = number of PPI partners. The
-  top-25 hub genes are labeled.
+  graph. <strong>Drag</strong> nodes to explore; <strong>scroll</strong> to zoom;
+  <strong>hover</strong> a node for gene name, degree, and mean expression.
+  Node color = average expression across the cohort (dark → bright);
+  node size = number of PPI partners. The biggest hubs are pre-labeled.
 </p>
 <div class="callout">
   <strong>Why hubs matter for interpretability.</strong> Genes with many
@@ -306,7 +399,14 @@ def write_html(stats: dict, out_path: Path, run_name: str,
   An attention ranking that beats degree is doing something the
   static graph alone can't.
 </div>
-<img src="{figures_rel_prefix}dataset_ppi_graph.png" alt="PPI graph">
+<iframe src="dataset_ppi_graph.html" style="width:100%;height:760px;
+        border:1px solid #ddd;border-radius:6px;" loading="lazy"></iframe>
+<details style="margin-top:0.8em;">
+  <summary style="cursor:pointer;color:#666;font-size:0.92em;">
+    Static rendering (PNG) for printing / fallback
+  </summary>
+  <img src="{figures_rel_prefix}dataset_ppi_graph.png" alt="PPI graph (static)">
+</details>
 
 <h2>Provenance summary</h2>
 <ul>
@@ -322,6 +422,7 @@ def write_html(stats: dict, out_path: Path, run_name: str,
   <li><strong>Total samples:</strong> {stats['n_samples']}
     ({" / ".join(f"{v} {k}" for k, v in cls.items())}).</li>
 </ul>
+</div>
 </body></html>
 """
     out_path.write_text(html)
@@ -351,9 +452,11 @@ def main():
                                  fig_dir / "dataset_overview.png")
     print(f"  saved: {fig_dir / 'dataset_overview.png'}")
 
-    print("Building PPI graph figure...")
+    print("Building PPI graph figure (static)...")
     make_ppi_figure(dataset, X, fig_dir / "dataset_ppi_graph.png")
     print(f"  saved: {fig_dir / 'dataset_ppi_graph.png'}")
+
+    print("Building PPI graph (interactive)...")
 
     site_dir = Path(args.site_dir) if args.site_dir else (
         Path(__file__).resolve().parent.parent / "site")
@@ -365,6 +468,10 @@ def main():
     for fname in ("dataset_overview.png", "dataset_ppi_graph.png"):
         shutil.copyfile(fig_dir / fname, site_dir / fname)
     prefix = ""
+
+    n_rendered = make_ppi_interactive(dataset, X,
+                                      site_dir / "dataset_ppi_graph.html")
+    print(f"  saved: {site_dir / 'dataset_ppi_graph.html'} ({n_rendered} nodes)")
 
     out_html = site_dir / "dataset.html"
     write_html(stats, out_html, run_dir.name, figures_rel_prefix=prefix)

@@ -41,6 +41,7 @@ from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH, get_de
 from src.interpret import _per_sample_node_importance, aggregate_per_class
 from src.interpret import SampleAttention
 from src.model import load_model
+from src.site_header import HEADER_CSS, render_header
 
 
 def _resolve_dir(arg: str | None) -> Path:
@@ -609,15 +610,13 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
 """
 
     html = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Multi-seed stability</title>
+<html><head><meta charset="utf-8"><title>Stability — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body {{ font-family:-apple-system,system-ui,sans-serif; max-width:920px;
-          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }}
-  .back-btn {{ display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
-               background:#1f77b4; color:white !important; border-radius:5px;
-               text-decoration:none; font-size:0.9em; }}
-  .back-btn:hover {{ background:#155a8a; }}
-  h1 {{ font-size:1.5em; margin-bottom:0.1em; }}
+{HEADER_CSS}
+  body {{ font-family:-apple-system,system-ui,sans-serif; margin:0;
+          color:#222; line-height:1.6; }}
+  .page {{ max-width:920px; margin:0 auto; padding:0 1em 2em; }}
+  h1 {{ font-size:1.5em; margin:0.4em 0 0.1em; }}
   h2 {{ font-size:1.15em; margin-top:1.6em; }}
   .meta {{ color:#666; font-size:0.9em; }}
   .plain {{ background:#f6fbf7; border-left:3px solid #2ca02c;
@@ -631,11 +630,10 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
          border-radius:6px; margin:0.6em 0; }}
   code {{ background:#f4f4f4; padding:0 0.3em; border-radius:3px; }}
 </style></head><body>
-
-<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+{render_header("stability", subtitle=f"Multi-seed run: <code>{run_name}</code> · {summary['n_seeds']} seeds")}
+<div class="page">
 
 <h1>Multi-seed stability — are the findings real?</h1>
-<p class="meta">Multi-seed run: <code>{run_name}</code> · seeds = {summary['n_seeds']}</p>
 
 <div class="plain">
   <strong>The question.</strong> If we retrain the same architecture from
@@ -702,6 +700,7 @@ def write_site_page(ms_dir: Path, summary: dict, out_path: Path) -> None:
   how much weight each finding bears.
 </p>
 
+</div>
 </body></html>
 """
     out_path.write_text(html)

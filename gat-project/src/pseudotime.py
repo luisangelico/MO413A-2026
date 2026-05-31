@@ -27,6 +27,7 @@ import torch
 from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH, get_device
 from src.interpret import GENE_SETS, _per_sample_node_importance
 from src.model import load_model
+from src.site_header import HEADER_CSS, render_header
 
 
 GENE_SET_COLORS = {
@@ -182,15 +183,13 @@ def write_html(meta: pd.DataFrame, pseudotime: np.ndarray, bin_counts: np.ndarra
     )
 
     html = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Pseudotime — gene attention along tumor-likeness</title>
+<html><head><meta charset="utf-8"><title>Pseudotime — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body {{ font-family:-apple-system,system-ui,sans-serif; max-width:900px;
-          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }}
-  .back-btn {{ display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
-               background:#1f77b4; color:white !important; border-radius:5px;
-               text-decoration:none; font-size:0.9em; }}
-  .back-btn:hover {{ background:#155a8a; }}
-  h1 {{ font-size:1.5em; }} h2 {{ font-size:1.1em; margin-top:1.6em; }}
+{HEADER_CSS}
+  body {{ font-family:-apple-system,system-ui,sans-serif; margin:0;
+          color:#222; line-height:1.6; }}
+  .page {{ max-width:900px; margin:0 auto; padding:0 1em 2em; }}
+  h1 {{ font-size:1.5em; margin-top:0.4em; }} h2 {{ font-size:1.1em; margin-top:1.6em; }}
   .meta {{ color:#666; font-size:0.9em; }}
   img {{ width:100%; max-width:880px; border:1px solid #eee; border-radius:6px;
          margin:0.6em 0; }}
@@ -205,8 +204,8 @@ def write_html(meta: pd.DataFrame, pseudotime: np.ndarray, bin_counts: np.ndarra
   .swatch {{ display:inline-block; width:12px; height:12px; border-radius:3px;
             margin-right:0.3em; vertical-align:middle; border:1px solid #999; }}
 </style></head><body>
-
-<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+{render_header("pseudotime", subtitle=f"Run: <code>{run_name}</code>")}
+<div class="page">
 
 <h1>Pseudotime — how the model's focus shifts from healthy skin to metastasis</h1>
 <p class="meta">Run: <code>{run_name}</code></p>
@@ -313,6 +312,7 @@ def write_html(meta: pd.DataFrame, pseudotime: np.ndarray, bin_counts: np.ndarra
   expression and PPI topology, with no progression labels in training.
 </p>
 
+</div>
 </body></html>
 """
     out_path.write_text(html)

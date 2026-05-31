@@ -1,13 +1,31 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Multi-seed stability</title>
+<html><head><meta charset="utf-8"><title>Stability — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body { font-family:-apple-system,system-ui,sans-serif; max-width:920px;
-          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }
-  .back-btn { display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
-               background:#1f77b4; color:white !important; border-radius:5px;
-               text-decoration:none; font-size:0.9em; }
-  .back-btn:hover { background:#155a8a; }
-  h1 { font-size:1.5em; margin-bottom:0.1em; }
+
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+}
+
+  body { font-family:-apple-system,system-ui,sans-serif; margin:0;
+          color:#222; line-height:1.6; }
+  .page { max-width:920px; margin:0 auto; padding:0 1em 2em; }
+  h1 { font-size:1.5em; margin:0.4em 0 0.1em; }
   h2 { font-size:1.15em; margin-top:1.6em; }
   .meta { color:#666; font-size:0.9em; }
   .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
@@ -21,11 +39,28 @@
          border-radius:6px; margin:0.6em 0; }
   code { background:#f4f4f4; padding:0 0.3em; border-radius:3px; }
 </style></head><body>
+<header class="site-header">
+  <div class="inner">
+    <h1 class="site-title">Skin Cancer Gene-Network Analysis</h1>
+    <div class="tagline">Graph attention networks over PPI for melanoma classification</div>
+    <div class="subtitle">Multi-seed run: <code>multiseed_20260530_145425</code> · 5 seeds</div>
+    <nav class="site-nav">
+    <a href="index.html">Predictions</a>
+    <a href="about-gat.html">What is a GAT?</a>
+    <a href="overview.html">Run overview</a>
+    <a href="dataset.html">Dataset</a>
+    <a href="interpret/index.html">Interpretability</a>
+    <a href="embeddings.html">Embeddings</a>
+    <a href="pseudotime.html">Pseudotime</a>
+    <a href="stability.html" class="active">Stability</a>
+    <a href="biomarkers.html">Biomarkers</a>
+    </nav>
+  </div>
+</header>
 
-<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+<div class="page">
 
 <h1>Multi-seed stability — are the findings real?</h1>
-<p class="meta">Multi-seed run: <code>multiseed_20260530_145425</code> · seeds = 5</p>
 
 <div class="plain">
   <strong>The question.</strong> If we retrain the same architecture from
@@ -59,7 +94,7 @@
 </ul>
 <table>
 <tr><th>ranking</th><th>Spearman ρ</th><th>top-50 Jaccard</th></tr>
-<tr><td>Primary Tumor</td><td>-0.019 ± 0.059</td><td>0.186 ± 0.034</td></tr><tr><td>Metastasis</td><td>0.033 ± 0.086</td><td>0.222 ± 0.056</td></tr><tr><td>Normal Tissue</td><td>0.064 ± 0.092</td><td>0.191 ± 0.030</td></tr><tr><td>Tumor - Normal</td><td>0.017 ± 0.062</td><td>0.174 ± 0.023</td></tr><tr><td>Metastasis - Primary</td><td>-0.026 ± 0.046</td><td>0.176 ± 0.037</td></tr>
+<tr><td>Primary Tumor</td><td>-0.008 ± 0.082</td><td>0.187 ± 0.030</td></tr><tr><td>Metastasis</td><td>0.041 ± 0.062</td><td>0.205 ± 0.043</td></tr><tr><td>Normal Tissue</td><td>0.033 ± 0.072</td><td>0.203 ± 0.053</td></tr><tr><td>Tumor - Normal</td><td>-0.028 ± 0.073</td><td>0.199 ± 0.046</td></tr><tr><td>Metastasis - Primary</td><td>0.009 ± 0.070</td><td>0.182 ± 0.040</td></tr>
 </table>
 <img src="stability_spearman.png"
      alt="Cross-seed Spearman heatmap per ranking">
@@ -125,4 +160,5 @@
   how much weight each finding bears.
 </p>
 
+</div>
 </body></html>

@@ -222,12 +222,13 @@ for c in range(C):
 # ---------------------------------------------------------------------------
 # HTML output
 # ---------------------------------------------------------------------------
-PAGE_CSS = """
-<style>
+from src.site_header import HEADER_CSS, render_header
+
+PAGE_CSS = "<style>" + HEADER_CSS + """
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-       max-width: 1100px; margin: 0 auto; padding: 1.5em; color: #222; }
-header { border-bottom: 1px solid #ddd; padding-bottom: 0.6em; margin-bottom: 1em; }
-header a { text-decoration: none; color: #06c; }
+       margin: 0; color: #222; }
+.page { max-width: 1100px; margin: 0 auto; padding: 0 1.5em 2em; }
+.page h1 { margin-top: 0.4em; font-size: 1.4em; }
 .metric-row { display: flex; gap: 1em; margin: 1em 0; flex-wrap: wrap; }
 .metric { background: #f5f5f7; border-radius: 8px; padding: 0.6em 1em; min-width: 140px; }
 .metric .label { font-size: 0.8em; color: #666; }
@@ -278,12 +279,10 @@ mean_acc = np.mean([r["test_acc"] for r in results]) * 100
 std_acc = np.std([r["test_acc"] for r in results]) * 100
 
 page = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Biomarker report</title>{PAGE_CSS}</head><body>
-<header>
-  <a href="index.html">&larr; index</a>
-  <h1>Stable attention biomarkers</h1>
-  <div>Multi-seed run: <code>{htmllib.escape(run_dir.name)}</code> · {S} seeds · dataset: <code>{htmllib.escape(config['dataset'])}</code></div>
-</header>
+<html><head><meta charset="utf-8"><title>Biomarkers — Skin Cancer Gene-Network Analysis</title>{PAGE_CSS}</head><body>
+{render_header("biomarkers", subtitle=f"Multi-seed run: <code>{htmllib.escape(run_dir.name)}</code> · {S} seeds · dataset: <code>{htmllib.escape(config['dataset'])}</code>")}
+<div class="page">
+<h1>Stable attention biomarkers</h1>
 
 <div class="metric-row">
   <div class="metric"><div class="label">Seeds</div><div class="value">{S}</div></div>
@@ -325,6 +324,7 @@ Top-{args.top_k} are red and labeled with one of the two endpoint genes.</p>
 worth biological follow-up. The melanoma overlap is a sanity check, not validation: edges
 involving non-listed genes can still be real (the curated list is small and well-known biology).
 </p>
+</div>
 </body></html>"""
 
 args.out.parent.mkdir(parents=True, exist_ok=True)

@@ -29,6 +29,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from src.config import CLASS_NAMES, DATASET_FILE, PROCESSED_DATASET_PATH, get_device
 from src.model import load_model
+from src.site_header import HEADER_CSS, render_header
 
 
 def _resolve_run(run_arg: str | None) -> Path:
@@ -187,15 +188,13 @@ def write_html(coords_dict, meta, knn_df, out_path: Path, run_name: str):
     nn_json = json.dumps(nn_lookup)
 
     html = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>GAT embeddings</title>
+<html><head><meta charset="utf-8"><title>Embeddings — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body {{ font-family:-apple-system,system-ui,sans-serif; max-width:1100px;
-          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.5; }}
-  .back-btn {{ display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
-               background:#1f77b4; color:white !important; border-radius:5px;
-               text-decoration:none; font-size:0.9em; }}
-  .back-btn:hover {{ background:#155a8a; }}
-  h1 {{ font-size:1.4em; margin-bottom:0.1em; }}
+{HEADER_CSS}
+  body {{ font-family:-apple-system,system-ui,sans-serif; margin:0;
+          color:#222; line-height:1.5; }}
+  .page {{ max-width:1100px; margin:0 auto; padding:0 1em 2em; }}
+  h1 {{ font-size:1.4em; margin:0.4em 0 0.1em; }}
   .meta {{ color:#666; font-size:0.9em; }}
   .controls {{ margin:0.8em 0; display:flex; gap:0.8em; align-items:center;
                flex-wrap:wrap; }}
@@ -219,10 +218,10 @@ def write_html(coords_dict, meta, knn_df, out_path: Path, run_name: str):
   .same {{ color:#2ca02c; font-weight:600; }}
   .diff {{ color:#d62728; }}
 </style></head><body>
+{render_header("embeddings", subtitle=f"Run: <code>{run_name}</code>")}
+<div class="page">
 
-<a href="index.html" class="back-btn">&larr; back to predictions site</a>
-
-<h1>Graph-level embeddings — {run_name}</h1>
+<h1>Graph-level embeddings</h1>
 <p class="meta">
   Each point is one sample's post-pooling embedding from the trained GAT,
   projected to 2D. Click a point to see its top-10 nearest neighbors in the
@@ -421,6 +420,7 @@ colorSel.addEventListener("change", render);
 window.addEventListener("resize", render);
 render();
 </script>
+</div>
 </body></html>
 """
     out_path.write_text(html)

@@ -129,12 +129,18 @@ SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
 
 PLOTLY_CDN = "cdn"  # use cdn so each page stays ~50KB
 
-PAGE_CSS = """
-<style>
+from src.site_header import HEADER_CSS, PROJECT_TITLE, render_header
+PROJECT_TITLE_HTML = PROJECT_TITLE
+
+PAGE_CSS = "<style>" + HEADER_CSS + """
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-       max-width: 1100px; margin: 0 auto; padding: 1.5em; color: #222; }
-header { border-bottom: 1px solid #ddd; padding-bottom: 0.6em; margin-bottom: 1em; }
-header a { text-decoration: none; color: #06c; }
+       margin: 0; color: #222; }
+.page { max-width: 1100px; margin: 0 auto; padding: 0 1.5em 2em; }
+.page-header { border-bottom: 1px solid #eee; padding-bottom: 0.6em;
+               margin-bottom: 1em; }
+.page-header h2 { margin: 0.2em 0 0.3em; font-size: 1.3em; }
+.page-header .meta { color: #666; font-size: 0.9em; }
+.page-header a { text-decoration: none; color: #06c; }
 .metric-row { display: flex; gap: 1em; margin: 1em 0; flex-wrap: wrap; }
 .metric { background: #f5f5f7; border-radius: 8px; padding: 0.6em 1em; min-width: 130px; }
 .metric .label { font-size: 0.8em; color: #666; }
@@ -323,11 +329,13 @@ Majority vote: {class_pill(majority)} <span class="{agree_cls}">({agree})</span>
 <title>Sample {idx} — {htmllib.escape(paciente_id)}</title>
 {PAGE_CSS}
 </head><body>
-<header>
-  <a href="../index.html">&larr; back to index</a>
-  <h1>Sample {idx}</h1>
-  <div>{htmllib.escape(paciente_id)}{sp_html}</div>
-</header>
+{render_header("predictions", subtitle=f"Sample {idx} — {htmllib.escape(paciente_id)}", prefix="../")}
+<div class="page">
+<div class="page-header">
+  <a href="../index.html">&larr; back to predictions</a>
+  <h2>Sample {idx}</h2>
+  <div class="meta">{htmllib.escape(paciente_id)}{sp_html}</div>
+</div>
 
 <div class="metric-row">
   <div class="metric"><div class="label">True class</div><div class="value">{class_pill(true)}</div></div>
@@ -353,6 +361,7 @@ Majority vote: {class_pill(majority)} <span class="{agree_cls}">({agree})</span>
   </div>
 </div>
 {nn_section}
+</div>
 </body></html>"""
     (SAMPLES_DIR / f"sample_{idx}.html").write_text(page)
 
@@ -594,12 +603,12 @@ metric_rows = "".join(
 )
 
 overview = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Overview</title>{PAGE_CSS}</head><body>
-<header>
-  <a href="index.html">&larr; index</a> · <a href="biomarkers.html">biomarkers (multi-seed)</a>
-  <h1>Run overview</h1>
-  <div>Run: {htmllib.escape(run_dir.name)} · weights: {htmllib.escape(weights_path.name)} · split: {args.split}</div>
-</header>
+<html><head><meta charset="utf-8"><title>Run overview — {PROJECT_TITLE_HTML}</title>{PAGE_CSS}</head><body>
+{render_header("overview", subtitle=f"Run: {htmllib.escape(run_dir.name)} · weights: {htmllib.escape(weights_path.name)} · split: {args.split}")}
+<div class="page">
+<div class="page-header">
+  <h2>Run overview</h2>
+</div>
 <div class="metric-row">
   <div class="metric"><div class="label">Samples evaluated</div><div class="value">{len(sample_records)}</div></div>
   <div class="metric"><div class="label">Accuracy</div><div class="value">{acc*100:.2f}%</div></div>
@@ -612,6 +621,7 @@ overview = f"""<!doctype html>
 {emb_section}
 {attn_section}
 {ppi_section}
+</div>
 </body></html>"""
 (OUT / "overview.html").write_text(overview)
 print(f"Wrote overview.html (accuracy {acc*100:.2f}%).")
@@ -633,18 +643,13 @@ records_json = json.dumps([
 ])
 
 index = f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>GAT predictions</title>{PAGE_CSS}</head><body>
-<header>
-  <h1>GAT melanoma predictor — predictions</h1>
-  <div>Run: <code>{htmllib.escape(run_dir.name)}</code> · split: <strong>{args.split}</strong> ·
-       <a href="overview.html">run overview</a> ·
-       <a href="dataset.html">dataset</a> ·
-       <a href="interpret/index.html">attention interpretability</a> ·
-       <a href="embeddings.html">embeddings</a> ·
-       <a href="pseudotime.html">pseudotime</a> ·
-       <a href="stability.html">stability</a> ·
-       <a href="biomarkers.html">biomarkers (multi-seed)</a></div>
-</header>
+<html><head><meta charset="utf-8"><title>Predictions — {PROJECT_TITLE_HTML}</title>{PAGE_CSS}</head><body>
+{render_header("predictions", subtitle=f"Run: <code>{htmllib.escape(run_dir.name)}</code> · split: <strong>{args.split}</strong>")}
+<div class="page">
+<div class="page-header">
+  <h2>Test-set predictions</h2>
+  <div class="meta">Click any row to inspect the per-sample graph and nearest training neighbors.</div>
+</div>
 <div class="metric-row">
   <div class="metric"><div class="label">Samples</div><div class="value">{len(sample_records)}</div></div>
   <div class="metric"><div class="label">Accuracy</div><div class="value">{acc*100:.2f}%</div></div>
@@ -709,6 +714,7 @@ document.querySelectorAll("th").forEach(th => th.onclick = () => {{
 [q, cls, ok].forEach(el => el.oninput = render);
 render();
 </script>
+</div>
 </body></html>"""
 (OUT / "index.html").write_text(index)
 print(f"Wrote index.html → {OUT}/")

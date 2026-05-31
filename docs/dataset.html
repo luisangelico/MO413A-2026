@@ -1,13 +1,31 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Dataset — sources and structure</title>
+<html><head><meta charset="utf-8"><title>Dataset — Skin Cancer Gene-Network Analysis</title>
 <style>
-  body { font-family:-apple-system,system-ui,sans-serif; max-width:920px;
-          margin:1.5em auto; padding:0 1em; color:#222; line-height:1.6; }
-  .back-btn { display:inline-block; padding:0.4em 0.9em; margin-bottom:0.6em;
-               background:#1f77b4; color:white !important; border-radius:5px;
-               text-decoration:none; font-size:0.9em; }
-  .back-btn:hover { background:#155a8a; }
-  h1 { font-size:1.5em; } h2 { font-size:1.15em; margin-top:1.6em; }
+
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+}
+
+  body { font-family:-apple-system,system-ui,sans-serif; margin:0; color:#222;
+          line-height:1.6; }
+  .page { max-width:920px; margin:0 auto; padding:0 1em 2em; }
+  h1 { font-size:1.5em; margin-top:0.4em; } h2 { font-size:1.15em; margin-top:1.6em; }
   .meta { color:#666; font-size:0.9em; }
   .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
             padding:0.7em 1em; margin:1em 0; }
@@ -26,11 +44,28 @@
                border-radius:8px; padding:0.9em 1em; }
   .src-card h3 { margin:0 0 0.3em 0; font-size:1em; }
 </style></head><body>
+<header class="site-header">
+  <div class="inner">
+    <h1 class="site-title">Skin Cancer Gene-Network Analysis</h1>
+    <div class="tagline">Graph attention networks over PPI for melanoma classification</div>
+    <div class="subtitle">Dataset file: <code>toil_skin_1000_200.pt</code> · run: <code>run_multiseed_seed2</code></div>
+    <nav class="site-nav">
+    <a href="index.html">Predictions</a>
+    <a href="about-gat.html">What is a GAT?</a>
+    <a href="overview.html">Run overview</a>
+    <a href="dataset.html" class="active">Dataset</a>
+    <a href="interpret/index.html">Interpretability</a>
+    <a href="embeddings.html">Embeddings</a>
+    <a href="pseudotime.html">Pseudotime</a>
+    <a href="stability.html">Stability</a>
+    <a href="biomarkers.html">Biomarkers</a>
+    </nav>
+  </div>
+</header>
 
-<a href="index.html" class="back-btn">&larr; back to predictions site</a>
+<div class="page">
 
 <h1>Where the data comes from</h1>
-<p class="meta">Dataset file: <code>toil_skin_1000_200.pt</code> · run: <code>run_multiseed_seed2</code></p>
 
 <div class="plain">
   <strong>In one sentence.</strong> Every sample in this project is a
@@ -118,12 +153,13 @@
 </ul>
 <img src="dataset_overview.png" alt="Dataset overview">
 
-<h2>The PPI graph itself</h2>
+<h2>The PPI graph — interactive</h2>
 <p>
   Force-directed layout of the same PPI network used in every sample's
-  graph. Node color = average expression across all samples in the
-  cohort (blue → yellow); node size = number of PPI partners. The
-  top-25 hub genes are labeled.
+  graph. <strong>Drag</strong> nodes to explore; <strong>scroll</strong> to zoom;
+  <strong>hover</strong> a node for gene name, degree, and mean expression.
+  Node color = average expression across the cohort (dark → bright);
+  node size = number of PPI partners. The biggest hubs are pre-labeled.
 </p>
 <div class="callout">
   <strong>Why hubs matter for interpretability.</strong> Genes with many
@@ -135,7 +171,14 @@
   An attention ranking that beats degree is doing something the
   static graph alone can't.
 </div>
-<img src="dataset_ppi_graph.png" alt="PPI graph">
+<iframe src="dataset_ppi_graph.html" style="width:100%;height:760px;
+        border:1px solid #ddd;border-radius:6px;" loading="lazy"></iframe>
+<details style="margin-top:0.8em;">
+  <summary style="cursor:pointer;color:#666;font-size:0.92em;">
+    Static rendering (PNG) for printing / fallback
+  </summary>
+  <img src="dataset_ppi_graph.png" alt="PPI graph (static)">
+</details>
 
 <h2>Provenance summary</h2>
 <ul>
@@ -151,4 +194,5 @@
   <li><strong>Total samples:</strong> 1281
     (102 Primary Tumor / 367 Metastasis / 812 Normal Tissue).</li>
 </ul>
+</div>
 </body></html>
