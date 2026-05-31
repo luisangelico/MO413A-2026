@@ -15,13 +15,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from src.i18n import PAGE_TITLE, lang_subdir
 from src.site_header import HEADER_CSS, render_header
 
 
-PAGE = """<!doctype html>
-<html><head><meta charset="utf-8"><title>What is a GAT? — Skin Cancer Gene-Network Analysis</title>
-<style>
-__HEADER_CSS__
+CSS = """
   body { font-family:-apple-system,system-ui,sans-serif; margin:0;
          color:#222; line-height:1.65; }
   .page { max-width:860px; margin:0 auto; padding:0 1em 2em; }
@@ -46,10 +44,10 @@ __HEADER_CSS__
   .next a { display:inline-block; padding:0.4em 0.8em; margin:0.3em 0.4em 0 0;
             background:#1f77b4; color:white; border-radius:5px;
             text-decoration:none; font-size:0.9em; }
-</style></head><body>
-__HEADER__
-<div class="page">
+"""
 
+
+BODY_EN = """
 <h1>What is a Graph Attention Network?</h1>
 <p class="meta">A plain-language tour of the architecture this project uses,
 and why graphs (not flat lists of numbers) are the right shape for the
@@ -231,7 +229,208 @@ problem.</p>
   <a href="pseudotime.html">Pseudotime</a>
   <a href="stability.html">Stability</a>
 </p>
+"""
 
+
+BODY_PT = """
+<h1>O que é uma Graph Attention Network?</h1>
+<p class="meta">Um passeio em linguagem simples pela arquitetura usada
+neste projeto, e por que grafos (e não listas planas de números) são a
+forma certa para este problema.</p>
+
+<div class="plain">
+  <strong>Em uma frase.</strong> Uma Graph Attention Network (GAT) é uma
+  rede neural que lê um <em>grafo</em> — nós conectados por arestas — e
+  aprende não apenas como cada nó parece sozinho, mas também o quanto
+  cada nó deve escutar cada um de seus vizinhos ao formar uma opinião.
+</div>
+
+<h2>Por que grafos?</h2>
+<p>
+  A maioria dos modelos de aprendizado de máquina recebe uma linha plana
+  de números: 1000 valores de expressão gênica por amostra, por exemplo.
+  Isso funciona, mas joga fora algo importante — biólogos sabem que
+  <strong>genes não atuam isoladamente</strong>. Eles formam vias,
+  complexos, cascatas regulatórias. Dois genes que se ligam fisicamente
+  comportam-se de modo muito diferente de dois genes sem nenhuma relação
+  entre si, mesmo que seus valores individuais de expressão sejam
+  idênticos.
+</p>
+<p>
+  Um grafo captura exatamente essa estrutura. Neste projeto:
+</p>
+<ul>
+  <li>Cada <strong>nó</strong> é um gene, com sua expressão medida como
+    atributo.</li>
+  <li>Cada <strong>aresta</strong> é uma interação proteína–proteína
+    (PPI) conhecida do STRING — duas proteínas que se ligam fisicamente.</li>
+  <li>Cada <strong>amostra</strong> (um paciente) torna-se um grafo
+    completo: as mesmas arestas que todos os outros, mas valores de
+    expressão por nó que diferem paciente a paciente.</li>
+</ul>
+<p>
+  A tarefa da GAT: olhar para esse grafo inteiro e decidir se o paciente
+  é pele saudável, melanoma primário ou metastático.
+</p>
+
+<h2>O que significa "atenção" aqui?</h2>
+<p>
+  Imagine que cada gene é uma pessoa em uma reunião. Seus parceiros PPI
+  são as outras pessoas com quem ele pode conversar. Agora peça a cada
+  pessoa que resuma o que está acontecendo. Ela vai escutar seus
+  vizinhos — mas não igualmente. Alguns vizinhos são muito relevantes;
+  outros, menos. <strong>Atenção</strong> é uma ponderação aprendida
+  que diz, para cada conexão, "o quanto esta pessoa deve confiar no que
+  aquela diz?"
+</p>
+<p>
+  Matematicamente, para um nó <code>j</code> atualizando-se com base em
+  seus vizinhos <code>i</code>, a atenção atribui a cada aresta
+  recebida um peso α(i→j) ∈ [0, 1], com a soma dos pesos sobre os
+  vizinhos de <code>j</code> igual a 1. A nova representação de
+  <code>j</code> é uma soma ponderada das mensagens de seus vizinhos.
+</p>
+<div class="formula">
+  h<sub>j</sub><sup>nova</sup> = σ( Σ<sub>i ∈ vizinhos(j)</sub> α(i→j) · W · h<sub>i</sub> )
+</div>
+<p>
+  O ponto crucial: α é <strong>aprendido</strong>. O modelo descobre,
+  a partir dos dados de treino, quais conexões gene→gene importam para
+  a tarefa. Esse é o segredo, e é também o que torna a atenção
+  <em>interpretável</em>: depois do treinamento, podemos ler os
+  valores de α e perguntar "em quais conexões o modelo mais se
+  apoiou?". Esse é o tema central da página de
+  <a href="interpret/index.html">interpretabilidade</a>.
+</p>
+
+<h2>Como o GATv2 difere do GAT "original"</h2>
+<p>
+  Este projeto usa <strong>GATv2</strong>. O GAT original tinha uma
+  falha sutil: em algumas configurações, sua atenção não conseguia
+  depender do nó-consulta, apenas dos nós-fonte. O GATv2 reordena as
+  operações de modo que a atenção é genuinamente <em>dinâmica</em> —
+  cada par nó–vizinho recebe seu próprio peso dependente de contexto.
+  Na prática, GATv2 treina de maneira mais confiável e tem desempenho
+  ao menos tão bom quanto o GAT em todos os benchmarks padrão.
+</p>
+
+<h2>A arquitetura usada aqui</h2>
+<p>
+  Três camadas GAT empilhadas, com cabeças de atenção em paralelo:
+</p>
+<ol>
+  <li><strong>Camada 1:</strong> 1 atributo de entrada (expressão) →
+    128 ocultas, com 4 cabeças de atenção. Cada cabeça olha para o mesmo
+    grafo independentemente, produzindo sua própria visão; suas saídas
+    são concatenadas.</li>
+  <li><strong>Camada 2:</strong> oculta → oculta, novamente 4 cabeças.
+    A informação agora se propaga dois saltos — um gene "vê" seus
+    vizinhos e os vizinhos dos seus vizinhos.</li>
+  <li><strong>Camada 3:</strong> oculta → oculta, 1 cabeça, três
+    saltos. A maior parte do sinal de longo alcance já se misturou.</li>
+  <li><strong>Pooling:</strong> os 1000 vetores por gene são
+    promediados em um único resumo de 64 números da amostra inteira —
+    seu <a href="embeddings.html">embedding</a>.</li>
+  <li><strong>Classificador:</strong> uma pequena camada linear
+    converte o embedding em 3 probabilidades
+    (Primário / Metástase / Normal).</li>
+</ol>
+
+<h2>O que o modelo produz pelo caminho</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>Atenção por aresta</h3>
+    <p>
+      Um número por aresta por camada por cabeça. Agregamos isso em
+      pontuações de importância por gene e estudamos em quais genes o
+      modelo se apoiou. Veja
+      <a href="interpret/index.html">interpretabilidade</a> e
+      <a href="biomarkers.html">biomarcadores</a>.
+    </p>
+  </div>
+  <div class="card">
+    <h3>Embeddings</h3>
+    <p>
+      As impressões digitais de 64 dimensões das amostras. A geometria
+      desse espaço — clusters, distâncias, vizinhanças — é a visão do
+      modelo sobre como os pacientes se relacionam. Veja
+      <a href="embeddings.html">embeddings</a>.
+    </p>
+  </div>
+  <div class="card">
+    <h3>Pseudotempo</h3>
+    <p>
+      Uma ordenação das amostras em um eixo Normal → Metástase derivada
+      da geometria do embedding, usada para acompanhar quais genes o
+      modelo recruta à medida que as amostras se tornam mais "tumorais".
+      Veja <a href="pseudotime.html">pseudotempo</a>.
+    </p>
+  </div>
+  <div class="card">
+    <h3>Predições e confiança</h3>
+    <p>
+      As probabilidades de classe propriamente ditas, com a calibração
+      de incerteza visível por amostra. Veja
+      <a href="index.html">predições</a> e
+      <a href="overview.html">visão geral</a>.
+    </p>
+  </div>
+</div>
+
+<h2>Por que uma GAT é adequada a este problema</h2>
+<ul>
+  <li><strong>A estrutura do grafo é biologia real.</strong> Tratar
+    expressão gênica como um vetor plano de 1000 dimensões ignora o
+    fato de que a biologia opera por redes proteicas em interação. Uma
+    GAT pode usar essa estrutura diretamente.</li>
+  <li><strong>Generaliza entre pacientes.</strong> O mesmo conjunto de
+    arestas é usado para todos os pacientes (a rede PPI humana não muda
+    de amostra para amostra). O que muda é a expressão de cada gene, o
+    atributo do nó. O modelo aprende regras sobre <em>como padrões de
+    expressão se propagam pela rede</em>, não fatos paciente-específicos.</li>
+  <li><strong>É interpretável.</strong> Os pesos de atenção não são
+    estados internos abstratos — são números por aresta que podemos ler,
+    agregar e validar contra biologia conhecida.</li>
+  <li><strong>Menor que a alternativa.</strong> Uma GAT com 128 canais
+    ocultos tem muito menos parâmetros que uma rede totalmente conectada
+    operando em 1000 genes — o grafo restringe como a informação flui,
+    o que é um inductive bias útil quando os dados de treino são
+    limitados.</li>
+</ul>
+
+<div class="callout">
+  <strong>O que uma GAT <em>não</em> é.</strong> Não é mágica. Não pode
+  criar sinal que não está nos dados. Se a expressão de entrada não
+  distingue duas classes, nenhuma estrutura de grafo vai resolver. E
+  atenção é uma ferramenta, não uma garantia — alta atenção não
+  significa "biologicamente importante", apenas "útil para este modelo
+  nestes dados". É por isso que toda alegação de interpretabilidade
+  neste projeto é comparada com um baseline de grau de nó e validada em
+  5 sementes aleatórias (veja a página de
+  <a href="stability.html">estabilidade</a>).
+</div>
+
+<h2>Para onde ir agora</h2>
+<p class="next">
+  <a href="dataset.html">Dados</a>
+  <a href="index.html">Predições</a>
+  <a href="interpret/index.html">Interpretabilidade</a>
+  <a href="embeddings.html">Embeddings</a>
+  <a href="pseudotime.html">Pseudotempo</a>
+  <a href="stability.html">Estabilidade</a>
+</p>
+"""
+
+
+PAGE = """<!doctype html>
+<html><head><meta charset="utf-8"><title>__TITLE__</title>
+<style>
+__HEADER_CSS__
+__CSS__
+</style></head><body>
+__HEADER__
+<div class="page">
+__BODY__
 </div>
 </body></html>
 """
@@ -241,16 +440,26 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--site-dir", type=str, default=None,
                     help="Default: <repo>/site")
+    ap.add_argument("--lang", choices=["en", "pt-br"], default="en")
     args = ap.parse_args()
 
     site_dir = Path(args.site_dir) if args.site_dir else (
         Path(__file__).resolve().parent.parent / "site")
-    site_dir.mkdir(parents=True, exist_ok=True)
-    out_path = site_dir / "about-gat.html"
+    out_dir = site_dir / lang_subdir(args.lang) if args.lang != "en" else site_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "about-gat.html"
+
+    body = BODY_EN if args.lang == "en" else BODY_PT
+    prefix = "" if args.lang == "en" else "../"
+    header = render_header("about-gat", lang=args.lang, prefix=prefix)
+    title = PAGE_TITLE[args.lang]["about-gat"]
 
     html = (PAGE
+            .replace("__TITLE__", title)
             .replace("__HEADER_CSS__", HEADER_CSS)
-            .replace("__HEADER__", render_header("about-gat")))
+            .replace("__CSS__", CSS)
+            .replace("__HEADER__", header)
+            .replace("__BODY__", body))
     out_path.write_text(html)
     print(f"Saved: {out_path}")
 

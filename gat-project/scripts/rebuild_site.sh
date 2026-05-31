@@ -112,8 +112,9 @@ echo "==> [6/7] python -m src.dataset_page"
 python -m src.dataset_page --site-dir "${SITE_OUT}"
 
 echo
-echo "==> [7/7] python -m src.about_gat_page"
-python -m src.about_gat_page --site-dir "${SITE_OUT}"
+echo "==> [7/7] python -m src.about_gat_page (en + pt-br)"
+python -m src.about_gat_page --site-dir "${SITE_OUT}" --lang en
+python -m src.about_gat_page --site-dir "${SITE_OUT}" --lang pt-br
 
 # ---------- 4. Cross-seed stability ------------------------------------------
 
@@ -131,6 +132,12 @@ python -m scripts.biomarker_report --run "${MULTISEED}" --out "${SITE_OUT}/bioma
 echo
 echo "==> python -m scripts.build_static_site --out ${SITE_OUT}"
 python -m scripts.build_static_site --out "${SITE_OUT}"
+
+# ---------- 6. Generate the Portuguese (pt-br) mirror ------------------------
+
+echo
+echo "==> python -m src.translate_site --site ${SITE_OUT}"
+python -m src.translate_site --site "${SITE_OUT}"
 
 # ---------- Done -------------------------------------------------------------
 

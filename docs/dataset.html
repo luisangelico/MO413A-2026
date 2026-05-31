@@ -6,7 +6,8 @@
                color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
                border-bottom: 3px solid #1f77b4;
                box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em; }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
 .site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
                   letter-spacing: 0.01em; color: white; line-height: 1.2; }
 .site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
@@ -17,9 +18,21 @@
               transition: background 0.12s, color 0.12s; }
 .site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
 .site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
 @media (max-width: 700px) {
   .site-header h1.site-title { font-size: 1.1em; }
   .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
 }
 
   body { font-family:-apple-system,system-ui,sans-serif; margin:0; color:#222;
@@ -46,6 +59,7 @@
 </style></head><body>
 <header class="site-header">
   <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="dataset.html" title="EN">EN</a><a href="pt-br/dataset.html" title="Switch to PT">PT</a></div>
     <h1 class="site-title">Skin Cancer Gene-Network Analysis</h1>
     <div class="tagline">Graph attention networks over PPI for melanoma classification</div>
     <div class="subtitle">Dataset file: <code>toil_skin_1000_200.pt</code> · run: <code>run_multiseed_seed2</code></div>
