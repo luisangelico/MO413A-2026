@@ -302,7 +302,7 @@ def plot_spearman_heatmap(matrices_per_ranking: dict[str, np.ndarray],
 def plot_pseudotime_stability(pt_df: pd.DataFrame, out_path: Path) -> None:
     fig, ax = plt.subplots(figsize=(11, 5))
     color_map = {"Primary Tumor": "#d62728", "Metastasis": "#ff7f0e",
-                 "Normal Tissue": "#2ca02c"}
+                 "Benign Nevus": "#2ca02c"}
     x = np.arange(len(pt_df))
     means = pt_df["pseudotime_mean"].values
     stds = pt_df["pseudotime_std"].values
@@ -328,7 +328,7 @@ def plot_pseudotime_stability(pt_df: pd.DataFrame, out_path: Path) -> None:
 def plot_knn_jaccard(per_sample_jaccard: np.ndarray, labels: list[str],
                      out_path: Path) -> None:
     color_map = {"Primary Tumor": "#d62728", "Metastasis": "#ff7f0e",
-                 "Normal Tissue": "#2ca02c"}
+                 "Benign Nevus": "#2ca02c"}
     fig, ax = plt.subplots(figsize=(8, 4.5))
     by_cls = {}
     for j, lbl in zip(per_sample_jaccard, labels):

@@ -57,7 +57,7 @@
     <div class="site-lang-switch"><a class="current" href="stability.html" title="EN">EN</a><a href="pt-br/stability.html" title="Switch to PT">PT</a></div>
     <h1 class="site-title">Skin Cancer Gene-Network Analysis</h1>
     <div class="tagline">Graph attention networks over PPI for melanoma classification</div>
-    <div class="subtitle">Multi-seed run: <code>multiseed_20260530_145425</code> · 5 seeds</div>
+    <div class="subtitle">Multi-seed run: <code>multiseed_20260531_202951</code> · 5 seeds</div>
     <nav class="site-nav">
     <a href="index.html">Predictions</a>
     <a href="about-gat.html">What is a GAT?</a>
@@ -88,9 +88,9 @@
   Five seeds, identical architecture and data, different initializations:
 </p>
 <ul>
-  <li><strong>Test accuracy:</strong> 91.71% ± 0.66%
-      (range 91.19–92.75%, 95% CI half-width
-      ≈ 0.57%).</li>
+  <li><strong>Test accuracy:</strong> 78.38% ± 5.67%
+      (range 71.62–85.14%, 95% CI half-width
+      ≈ 4.97%).</li>
 </ul>
 <img src="stability_accuracy.png"
      alt="Per-seed accuracy and per-class F1">
@@ -108,7 +108,7 @@
 </ul>
 <table>
 <tr><th>ranking</th><th>Spearman ρ</th><th>top-50 Jaccard</th></tr>
-<tr><td>Primary Tumor</td><td>-0.004 ± 0.089</td><td>0.193 ± 0.057</td></tr><tr><td>Metastasis</td><td>0.030 ± 0.051</td><td>0.212 ± 0.041</td></tr><tr><td>Normal Tissue</td><td>0.052 ± 0.056</td><td>0.211 ± 0.026</td></tr><tr><td>Tumor - Normal</td><td>0.034 ± 0.113</td><td>0.184 ± 0.045</td></tr><tr><td>Metastasis - Primary</td><td>-0.012 ± 0.056</td><td>0.177 ± 0.022</td></tr>
+<tr><td>Primary Tumor</td><td>nan ± nan</td><td>0.277 ± 0.118</td></tr><tr><td>Metastasis</td><td>-0.035 ± 0.136</td><td>0.349 ± 0.039</td></tr><tr><td>Benign Nevus</td><td>0.010 ± 0.122</td><td>0.302 ± 0.066</td></tr><tr><td>Tumor - Normal</td><td>-0.005 ± 0.120</td><td>0.313 ± 0.056</td></tr><tr><td>Metastasis - Primary</td><td>0.017 ± 0.150</td><td>0.324 ± 0.082</td></tr>
 </table>
 <img src="stability_spearman.png"
      alt="Cross-seed Spearman heatmap per ranking">
@@ -137,11 +137,11 @@
 </p>
 <ul>
   <li><strong>kNN Jaccard (k=10):</strong>
-      0.463 ± 0.118
-      across seed pairs over 193 samples present in
+      0.621 ± 0.154
+      across seed pairs over 74 samples present in
       every seed's test split. <em>1.0 = identical neighborhoods, 0.0 = no overlap.</em></li>
   <li><strong>Procrustes disparity:</strong>
-      0.0467 (0 = identical up to rotation/scale).</li>
+      0.0743 (0 = identical up to rotation/scale).</li>
 </ul>
 <img src="stability_knn_jaccard.png"
      alt="Per-sample kNN Jaccard across seeds, by class">
@@ -156,8 +156,8 @@
   progression axis; large bars mean the sample is ambiguous.
 </p>
 <ul>
-  <li><strong>Per-sample σ:</strong> mean = 0.049,
-      median = 0.038, max = 0.132
+  <li><strong>Per-sample σ:</strong> mean = 0.028,
+      median = 0.026, max = 0.086
       (on a 0–1 axis).</li>
 </ul>
 <img src="stability_pseudotime.png"

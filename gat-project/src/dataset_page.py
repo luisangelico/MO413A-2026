@@ -2,9 +2,11 @@
 
 Builds:
   - figures: dataset_overview.png, dataset_ppi_graph.png (under <run_dir>/figures/)
-  - site/dataset.html: a non-technical explainer of the data sources (TCGA-SKCM
-    + GTEx skin via the UCSC Xena TOIL recompute, STRING physical PPIs) and the
-    structure of the per-sample graphs the GAT consumes
+  - site/dataset.html: a non-technical explainer of the two data sources
+    (TCGA-SKCM tumors via the UCSC Xena TOIL recompute, plus benign melanocytic
+    nevi from GEO GSE112509), the harmonization steps that put them on a
+    comparable scale, the STRING physical PPI edges, and the structure of the
+    per-sample graphs the GAT consumes.
 
 Run:
     python -m src.dataset_page
@@ -70,8 +72,8 @@ def make_overview_figure(dataset, X: np.ndarray, labels: np.ndarray,
             vals = np.random.default_rng(0).choice(vals, 50000, replace=False)
         ax.hist(vals, bins=80, density=True, alpha=0.45,
                 label=CLASS_NAMES[c], color=COLORS[c])
-    ax.set_title("Expression value distribution")
-    ax.set_xlabel("Expression (log2 TPM+0.001)")
+    ax.set_title("Expression value distribution (after harmonization)")
+    ax.set_xlabel("Standardized expression (TCGA-train reference frame)")
     ax.set_ylabel("Density")
     ax.legend()
 
@@ -258,8 +260,137 @@ def make_ppi_interactive(dataset, X: np.ndarray, out_path: Path,
     return G.number_of_nodes()
 
 
+MARKER_GENES = [
+    # Pigmentation / melanocyte lineage — should be present in melanocytic samples
+    ("MITF",  "pigmentation"),
+    ("TYR",   "pigmentation"),
+    ("PMEL",  "pigmentation"),
+    ("MLANA", "pigmentation"),
+    ("DCT",   "pigmentation"),
+    ("SOX10", "pigmentation"),
+    # Keratinization — keratinocyte function, NOT melanocyte. Should be low in
+    # both nevi and melanoma if the panel is dominated by melanocytic biology.
+    ("KRT5",  "keratinization"),
+    ("KRT14", "keratinization"),
+    ("LOR",   "keratinization"),
+    ("FLG",   "keratinization"),
+]
+
+
+def _pick_representatives(dataset, X: np.ndarray, labels: np.ndarray) -> dict:
+    """For each class, pick the sample closest to that class's centroid."""
+    reps = {}
+    for c in sorted(set(labels.tolist())):
+        mask = labels == c
+        Xc = X[mask]
+        centroid = Xc.mean(axis=0)
+        dists = np.linalg.norm(Xc - centroid, axis=1)
+        idx_in_class = int(np.argmin(dists))
+        global_idx = int(np.where(mask)[0][idx_in_class])
+        reps[c] = global_idx
+    return reps
+
+
+def _bar(value: float, vmin: float, vmax: float, width_px: int = 140) -> str:
+    """Render a small inline SVG bar centered on 0 for z-scored values."""
+    span = max(abs(vmin), abs(vmax), 1e-6)
+    half = width_px / 2
+    pos = (value / span) * half
+    color = "#d62728" if value > 0 else "#1f77b4"
+    if value >= 0:
+        x, w = half, max(pos, 1)
+    else:
+        x, w = half + pos, max(-pos, 1)
+    return (
+        f'<svg width="{width_px}" height="14" style="vertical-align:middle">'
+        f'<line x1="{half}" y1="0" x2="{half}" y2="14" stroke="#bbb" stroke-width="1"/>'
+        f'<rect x="{x}" y="3" width="{w}" height="8" fill="{color}" opacity="0.85"/>'
+        f'</svg>'
+    )
+
+
+def build_samples_block(dataset, X: np.ndarray, labels: np.ndarray) -> str:
+    """Build the 'real samples' HTML block — one representative per class with
+    marker-gene expression bars."""
+    gene_names = list(getattr(dataset[0], "gene_names", []))
+    name_to_idx = {g: i for i, g in enumerate(gene_names)}
+    available = [(g, kind) for g, kind in MARKER_GENES if g in name_to_idx]
+    if not available:
+        return (
+            "<p class='meta'>(No marker genes from the curated list are present "
+            "in the top-variable panel — sample examples skipped.)</p>"
+        )
+    reps = _pick_representatives(dataset, X, labels)
+
+    # Range across the marker-gene subset, all classes — for shared bar scaling.
+    sub_idx = [name_to_idx[g] for g, _ in available]
+    vmin = float(X[:, sub_idx].min())
+    vmax = float(X[:, sub_idx].max())
+
+    cards = []
+    for c, sample_idx in reps.items():
+        sample = dataset[sample_idx]
+        sid = getattr(sample, "paciente_id", f"sample {sample_idx}")
+        cohort = "GSE112509" if sid.endswith("_N") else "TCGA-SKCM"
+        color = COLORS[c]
+        x_vec = X[sample_idx]
+
+        rows = []
+        for gene, kind in available:
+            i = name_to_idx[gene]
+            v = float(x_vec[i])
+            kind_color = "#2a8a3e" if kind == "pigmentation" else "#a0540a"
+            rows.append(
+                f'<tr>'
+                f'<td><code>{gene}</code></td>'
+                f'<td style="color:{kind_color};font-size:0.85em">{kind}</td>'
+                f'<td style="text-align:right;font-variant-numeric:tabular-nums">'
+                f'{v:+.2f}</td>'
+                f'<td>{_bar(v, vmin, vmax)}</td>'
+                f'</tr>'
+            )
+
+        cards.append(f"""
+        <div class="src-card" style="border-top:4px solid {color};">
+          <h3 style="color:{color};">{CLASS_NAMES[c]}</h3>
+          <p class="meta" style="margin:0 0 0.4em 0;">
+            Patient ID: <code>{sid}</code><br>
+            Cohort: <strong>{cohort}</strong>
+          </p>
+          <table style="font-size:0.85em;width:100%;">
+            <tr><th>Gene</th><th>Role</th><th style="text-align:right">Z</th>
+                <th style="width:150px">vs. cohort mean</th></tr>
+            {''.join(rows)}
+          </table>
+        </div>""")
+
+    return f"""
+<h2>What a real sample looks like</h2>
+<p>
+  One representative sample per class — picked as the sample closest to its
+  class centroid in expression space. Values are the per-cohort gene-wise
+  z-scores actually fed into the model: <strong>+</strong> means the gene
+  is more expressed than that cohort's average, <strong>−</strong> means
+  less. The genes shown are curated, not the model's selection.
+</p>
+<div class="callout">
+  <strong>Read the keratinization rows.</strong> If this dataset were still
+  contrasting melanoma against bulk skin, you'd expect <code>KRT5</code> /
+  <code>KRT14</code> / <code>LOR</code> / <code>FLG</code> to dominate the
+  Normal class. With nevi as the comparator, both nevus and tumor samples
+  are melanocytic — keratinization is not the discriminator anymore. The
+  pigmentation genes (<code>MITF</code>, <code>TYR</code>,
+  <code>MLANA</code>, …) are now the biologically meaningful axis.
+</div>
+<div class="sources" style="grid-template-columns:repeat(3,1fr);">
+{''.join(cards)}
+</div>
+"""
+
+
 def write_html(stats: dict, out_path: Path, run_name: str,
-               figures_rel_prefix: str) -> None:
+               figures_rel_prefix: str,
+               samples_block: str = "") -> None:
     cls = stats["class_counts"]
     cls_rows = "".join(
         f"<tr><td>{name}</td><td>{count}</td></tr>" for name, count in cls.items()
@@ -285,7 +416,7 @@ def write_html(stats: dict, out_path: Path, run_name: str,
   code {{ background:#f4f4f4; padding:0 0.3em; border-radius:3px; }}
   ul {{ line-height:1.8; }}
   .sources {{ display:grid; grid-template-columns:1fr 1fr; gap:1em; }}
-  @media (max-width:760px) {{ .sources {{ grid-template-columns:1fr; }} }}
+  @media (max-width:760px) {{ .sources {{ grid-template-columns:1fr !important; }} }}
   .src-card {{ background:#f6f8fc; border:1px solid #d8def0;
                border-radius:8px; padding:0.9em 1em; }}
   .src-card h3 {{ margin:0 0 0.3em 0; font-size:1em; }}
@@ -305,37 +436,103 @@ def write_html(stats: dict, out_path: Path, run_name: str,
 <h2>The two data sources</h2>
 <div class="sources">
   <div class="src-card">
-    <h3>1. Gene expression — UCSC Xena TOIL recompute</h3>
+    <h3>1. Tumor expression — TCGA-SKCM via UCSC Xena TOIL</h3>
     <p>
-      Skin tumor samples come from <strong>TCGA-SKCM</strong> (The Cancer
-      Genome Atlas, skin cutaneous melanoma) and healthy skin from
-      <strong>GTEx</strong> (Genotype-Tissue Expression). Both are
-      reprocessed together by the <strong>UCSC Xena TOIL pipeline</strong>,
-      which applies the same alignment, quantification, and normalization
-      to every sample. This matters: comparing two cohorts processed by
-      different pipelines introduces "batch effects" that often dominate
-      any biological signal. TOIL eliminates that confounder by design.
+      Primary and metastatic melanoma samples come from
+      <strong>TCGA-SKCM</strong> (The Cancer Genome Atlas, skin cutaneous
+      melanoma), as reprocessed by the <strong>UCSC Xena TOIL
+      pipeline</strong>. TOIL applies a single, uniform alignment +
+      quantification pipeline to every sample, which is essential when
+      mixing data from different sources.
     </p>
     <p>
-      Values are reported as <code>log2(TPM + 0.001)</code>: roughly
-      "how much each gene is being expressed, on a log scale."
+      Values are reported as <code>log2(TPM + 0.001)</code> — "how much
+      each gene is being expressed, on a log scale."
     </p>
   </div>
   <div class="src-card">
-    <h3>2. Protein interactions — STRING</h3>
+    <h3>2. Benign-melanocyte expression — GEO GSE112509 (nevi)</h3>
+    <p>
+      The healthy-comparator class is <strong>laser-microdissected
+      melanocytic nevi</strong> from
+      <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE112509">GSE112509</a>
+      (Hartmann <em>et al.</em>, 2018). Nevi are <em>benign melanocytic
+      lesions</em> — same cell lineage as melanoma — so the contrast we
+      learn is malignant-vs-benign melanocyte, not melanocyte-vs-skin.
+    </p>
+    <p>
+      Values are <strong>DESeq2 size-factor-normalized counts</strong>
+      from the GEO supplementary file. We <code>log2(x + 1)</code>-transform
+      them to bring them onto the same kind of log scale as TOIL.
+    </p>
+  </div>
+  <div class="src-card">
+    <h3>3. Protein interactions — STRING</h3>
     <p>
       Edges between genes in each sample's graph come from
-      <strong>STRING-DB</strong>, a database of known
-      protein–protein interactions. We use only <em>physical</em>
-      interactions (proteins that actually bind) at confidence
-      threshold ≥ 200 — a moderately permissive cutoff that keeps
-      well-supported edges and trims speculative ones.
+      <strong>STRING-DB</strong>, a database of known protein–protein
+      interactions. We use only <em>physical</em> interactions (proteins
+      that actually bind) at confidence threshold ≥ 200.
     </p>
     <p>
       The same edge set is used for every sample; only the node
       <em>features</em> (expression values) change patient to patient.
     </p>
   </div>
+  <div class="src-card">
+    <h3>4. Cross-cohort harmonization</h3>
+    <p>
+      TCGA-SKCM and GSE112509 come from different pipelines, so raw values
+      aren't directly comparable. We can't use per-cohort z-scoring here:
+      the nevus class lives entirely in GSE112509 (cohort and class 2 are
+      perfectly confounded), so per-cohort centering would force every
+      gene's nevus mean to match its tumor mean — erasing the signal we
+      want to learn.
+    </p>
+    <p>
+      Instead: (i) <strong>shift GSE onto the TCGA scale</strong> by
+      subtracting a single global offset (the difference of the two
+      cohorts' median expression), then (ii) <strong>standardize both
+      cohorts using TCGA-train per-gene mean &amp; std</strong> as the
+      reference frame. This corrects the platform-level offset without
+      destroying per-gene differences between nevi and tumors.
+    </p>
+    <p class="meta">
+      <em>Limitation.</em> Not full batch correction — only joint
+      reprocessing from FASTQs would be. The shift is global, not
+      per-gene, so cohort-specific gene-level biases can still leak in.
+    </p>
+  </div>
+</div>
+
+<h2>Why nevi, not skin?</h2>
+<div class="callout">
+  <p>
+    Earlier versions of this project used <strong>GTEx skin</strong> as the
+    healthy class. That was a mistake — and a biologist on the team
+    flagged it. <strong>Melanocytes do not keratinize.</strong>
+    Keratinization is the job of <em>keratinocytes</em>, a different
+    cell type that makes up the bulk of the epidermis. GTEx "skin" is
+    whole-tissue epidermis, so it is overwhelmingly keratinocytes — only a
+    small fraction of cells are melanocytes.
+  </p>
+  <p>
+    A model trained against GTEx skin therefore ends up learning a
+    <em>melanocyte-vs-keratinocyte</em> signature: keratinization genes
+    (<code>KRT*</code>, <code>LOR</code>, <code>FLG</code>,
+    <code>IVL</code>) dominate. That is a tissue-composition artifact,
+    not melanocyte biology.
+  </p>
+  <p>
+    Replacing GTEx skin with <strong>nevi from GSE112509</strong> fixes
+    this: nevi are themselves melanocytic, so the contrast becomes
+    malignant melanocyte (TCGA-SKCM tumors) vs benign melanocyte
+    (nevi). Pigmentation / melanocyte-lineage genes
+    (<code>MITF</code>, <code>TYR</code>, <code>PMEL</code>,
+    <code>MLANA</code>, <code>DCT</code>, <code>SOX10</code>) become
+    biologically interpretable signal rather than noise pushed aside by
+    keratin genes.
+  </p>
 </div>
 
 <h2>Three classes, one task</h2>
@@ -344,10 +541,12 @@ def write_html(stats: dict, out_path: Path, run_name: str,
 {cls_rows}
 </table>
 <p>
-  The model is trained to look at a sample's expression-on-PPI graph and
-  decide which of these three categories it belongs to. The Normal-skin
-  class comes from GTEx; both tumor classes come from TCGA-SKCM.
+  The model looks at each sample's expression-on-PPI graph and predicts
+  which of these three categories it belongs to. <strong>Primary
+  Tumor</strong> and <strong>Metastasis</strong> come from TCGA-SKCM;
+  <strong>Benign Nevus</strong> comes from GSE112509.
 </p>
+{samples_block}
 
 <h2>What each sample looks like</h2>
 <ul>
@@ -368,14 +567,17 @@ def write_html(stats: dict, out_path: Path, run_name: str,
   Four sanity-check views of the dataset before any modeling:
 </p>
 <ul>
-  <li><strong>Top-left:</strong> how many samples per class.</li>
-  <li><strong>Top-right:</strong> distribution of log-expression values
-    across all genes in each class. Tumor and metastasis distributions
-    look broadly similar; normal skin is offset.</li>
-  <li><strong>Bottom-left:</strong> PCA of raw expression (no model
-    involved). Even a simple linear projection separates Normal from
-    Tumor cleanly — the harder task is splitting Primary vs Metastasis.
-    PC1 + PC2 explain {stats['pca_var_explained']:.1f}% of variance.</li>
+  <li><strong>Top-left:</strong> how many samples per class. Note the
+    nevus class is much smaller than the tumor classes (this is handled
+    in training via class-weighted loss).</li>
+  <li><strong>Top-right:</strong> distribution of expression values per
+    class, after the per-cohort z-score harmonization. All three classes
+    sit on the same scale; the per-class differences reflect biology,
+    not pipeline units.</li>
+  <li><strong>Bottom-left:</strong> PCA of harmonized expression (no
+    model involved). Nevi separate cleanly from tumors; the harder
+    sub-task is splitting Primary from Metastasis. PC1 + PC2 explain
+    {stats['pca_var_explained']:.1f}% of variance.</li>
   <li><strong>Bottom-right:</strong> degree distribution of the PPI
     graph. A few hub genes have many partners; most have a handful.</li>
 </ul>
@@ -410,11 +612,18 @@ def write_html(stats: dict, out_path: Path, run_name: str,
 
 <h2>Provenance summary</h2>
 <ul>
-  <li><strong>Source:</strong> TCGA-SKCM + GTEx skin, jointly reprocessed
-    by the UCSC Xena TOIL pipeline.</li>
-  <li><strong>Quantification:</strong> log2(TPM + 0.001).</li>
+  <li><strong>Tumor cohort:</strong> TCGA-SKCM (Primary Tumor +
+    Metastasis), via the UCSC Xena TOIL recompute.
+    Quantification: <code>log2(TPM + 0.001)</code>.</li>
+  <li><strong>Benign-melanocyte cohort:</strong> GEO GSE112509
+    (Hartmann <em>et al.</em>, 2018) — laser-microdissected nevi.
+    Quantification: DESeq2 size-factor-normalized counts, then
+    <code>log2(x + 1)</code>.</li>
+  <li><strong>Harmonization:</strong> global cohort offset removed (GSE
+    median shifted to TCGA-train median), then both cohorts standardized
+    using TCGA-train per-gene mean &amp; std as the reference frame.</li>
   <li><strong>Gene panel:</strong> top-{stats['n_nodes']} most-variable
-    protein-coding genes.</li>
+    genes selected on the train split only (no leakage).</li>
   <li><strong>Graph:</strong> STRING physical PPIs, confidence ≥ 200.</li>
   <li><strong>Per-sample graph:</strong> {stats['n_nodes']} nodes,
     {stats['n_edges']} directed edges (shared topology, per-sample
@@ -422,6 +631,10 @@ def write_html(stats: dict, out_path: Path, run_name: str,
   <li><strong>Total samples:</strong> {stats['n_samples']}
     ({" / ".join(f"{v} {k}" for k, v in cls.items())}).</li>
 </ul>
+<p class="meta">
+  Pipeline source: <code>scripts/download_toil.py</code>. Active dataset
+  file is set in <code>src/config.py</code> as <code>DATASET_FILE</code>.
+</p>
 </div>
 </body></html>
 """
@@ -473,8 +686,11 @@ def main():
                                       site_dir / "dataset_ppi_graph.html")
     print(f"  saved: {site_dir / 'dataset_ppi_graph.html'} ({n_rendered} nodes)")
 
+    samples_block = build_samples_block(dataset, X, labels)
+
     out_html = site_dir / "dataset.html"
-    write_html(stats, out_html, run_dir.name, figures_rel_prefix=prefix)
+    write_html(stats, out_html, run_dir.name, figures_rel_prefix=prefix,
+               samples_block=samples_block)
     print(f"Saved: {out_html}")
 
 

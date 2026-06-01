@@ -28,7 +28,9 @@ LEARNING_RATE = 1e-3
 WEIGHT_DECAY = 5e-4
 EARLY_STOP_PATIENCE = 50
 SEED = 42
-# TOIL dataset has ~1300 GTEx normal-skin samples, so the Normal class is learnable.
+# Class 2 is benign nevi (GSE112509, ~23 samples). Far smaller than the tumor
+# classes, but learnable with class-weighted loss. Set True to fall back to
+# binary Primary-vs-Metastasis on TCGA-SKCM only.
 DROP_NORMAL_CLASS = False
 
 torch.manual_seed(SEED)
@@ -49,7 +51,8 @@ if DROP_NORMAL_CLASS:
     print(f"Dropped Normal class → {len(dataset)} patients, binary classification")
 else:
     NUM_CLASSES = 3
-    class_names = {0: "Primary Tumor", 1: "Metastasis", 2: "Normal Tissue"}
+    from src.config import CLASS_NAMES
+    class_names = dict(CLASS_NAMES)
 
 labels = np.array([int(d.y.item()) for d in dataset])
 

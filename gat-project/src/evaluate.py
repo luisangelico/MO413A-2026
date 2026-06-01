@@ -42,7 +42,8 @@ if NUM_CLASSES == 2:
     dataset = [d for d in dataset if int(d.y.item()) != 2]
     class_names = {0: "Primary Tumor", 1: "Metastasis"}
 else:
-    class_names = {0: "Primary Tumor", 1: "Metastasis", 2: "Normal Tissue"}
+    from src.config import CLASS_NAMES
+    class_names = dict(CLASS_NAMES)
 
 # Load test split
 splits_path = run_dir / "splits.npz"

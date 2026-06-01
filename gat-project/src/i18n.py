@@ -125,6 +125,7 @@ T = {
         ),
     },
     "class_normal_tissue": {"en": "Normal Tissue", "pt-br": "Tecido Normal"},
+    "class_benign_nevus":  {"en": "Benign Nevus",  "pt-br": "Nevo Benigno"},
     "class_primary_tumor": {"en": "Primary Tumor", "pt-br": "Tumor Primário"},
     "class_metastasis":    {"en": "Metastasis",    "pt-br": "Metástase"},
 }

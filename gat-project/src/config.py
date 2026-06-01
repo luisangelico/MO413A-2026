@@ -40,6 +40,13 @@ PROCESSED_DATASET_PATH = Path(__file__).resolve().parent.parent / "data" / "proc
 
 # Active dataset. Switch this to point training/eval/visualization at a different
 # processed file without touching every script.
-DATASET_FILE = PROCESSED_DATASET_PATH / f"toil_skin_{NUM_NODES}_{CONFIDENCE_THRESHOLD}.pt"
+DATASET_FILE = PROCESSED_DATASET_PATH / f"skcm_nevi_{NUM_NODES}_{CONFIDENCE_THRESHOLD}.pt"
 
-CLASS_NAMES = {0: "Primary Tumor", 1: "Metastasis", 2: "Normal Tissue"}
+# Class 2 is now benign melanocytic nevi from GSE112509, replacing the GTEx skin
+# samples used previously. GTEx "skin" is bulk epidermis (overwhelmingly
+# keratinocytes); since melanocytes do not keratinize, comparing melanoma to
+# GTEx skin made keratinization genes (KRT*, LOR, FLG, IVL) the dominant signal —
+# a tissue-composition artifact, not melanocyte biology. Nevi are also
+# melanocytic, so the contrast now reflects malignant vs benign melanocyte
+# transcriptomes.
+CLASS_NAMES = {0: "Primary Tumor", 1: "Metastasis", 2: "Benign Nevus"}

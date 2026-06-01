@@ -88,23 +88,23 @@ touch "${DEST_RUN_DIR}"
 # ---------- 3. Regenerate single-run artifacts -------------------------------
 
 echo
-echo "==> [1/5] python -m src.evaluate"
+echo "==> [1/7] python -m src.evaluate"
 python -m src.evaluate
 
 echo
-echo "==> [2/5] python -m src.interpret"
+echo "==> [2/7] python -m src.interpret"
 python -m src.interpret
 
 echo
-echo "==> [3/5] python -m src.interpret_viz --html"
+echo "==> [3/7] python -m src.interpret_viz --html"
 python -m src.interpret_viz --html --site-dir "${SITE_OUT}/interpret"
 
 echo
-echo "==> [4/5] python -m src.embeddings"
+echo "==> [4/7] python -m src.embeddings"
 python -m src.embeddings --site-dir "${SITE_OUT}"
 
 echo
-echo "==> [5/6] python -m src.pseudotime"
+echo "==> [5/7] python -m src.pseudotime"
 python -m src.pseudotime --site-dir "${SITE_OUT}"
 
 echo

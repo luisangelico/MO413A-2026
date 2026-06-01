@@ -90,7 +90,7 @@ def project_2d(Z: np.ndarray) -> dict[str, np.ndarray]:
 CLASS_COLORS = {
     "Primary Tumor": "#d62728",
     "Metastasis":    "#ff7f0e",
-    "Normal Tissue": "#2ca02c",
+    "Benign Nevus":  "#2ca02c",
 }
 
 
@@ -313,7 +313,7 @@ const NN   = {nn_json};
 const CLASS_COLORS = {{
   "Primary Tumor": "#d62728",
   "Metastasis":    "#ff7f0e",
-  "Normal Tissue": "#2ca02c"
+  "Benign Nevus":  "#2ca02c"
 }};
 
 const svg = document.getElementById("scatter");

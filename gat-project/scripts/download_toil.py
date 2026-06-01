@@ -1,21 +1,46 @@
 #!/usr/bin/env python3
 """
-Download TCGA-SKCM (melanoma) + GTEx skin samples from the UCSC Xena TOIL
-recompute, where both are processed through the same pipeline (avoiding
-batch effects between TCGA and GTEx).
+Build the melanoma-vs-nevus dataset.
 
-Builds patient-level graphs with PPI edges from STRING.
+Two cohorts:
+  1. TCGA-SKCM tumor samples — UCSC Xena TOIL recompute, log2(TPM+0.001)
+       Labels 0 (Primary Tumor) and 1 (Metastasis).
+  2. Benign melanocytic nevi — GEO GSE112509 (Hartmann et al., 2018),
+       laser-microdissected nevi, DESeq2-normalized counts from the GEO
+       supplementary file.
+       Label 2 (Benign Nevus).
 
-Labels:
-    0 = Primary Tumor       (TCGA-SKCM, sample_type 'Primary Tumor')
-    1 = Metastasis          (TCGA-SKCM, sample_type 'Metastatic')
-    2 = Normal skin         (GTEx, primary_site 'Skin')
+Why nevi instead of GTEx skin?
+    Melanocytes do not keratinize — keratinization is a keratinocyte function.
+    GTEx "skin" is bulk epidermis (overwhelmingly keratinocytes), so a model
+    contrasting melanoma with GTEx skin learns a melanocyte-vs-keratinocyte
+    signature: keratinization genes (KRT*, LOR, FLG, IVL) dominate. That is a
+    tissue-composition artifact, not melanocyte biology. Nevi are benign
+    melanocytic lesions — same lineage as melanoma — so the contrast reflects
+    malignant vs benign melanocyte transcriptomes.
 
-Notes on TOIL:
-    - Expression values are already log2(TPM + 0.001). We do NOT apply log1p again.
-    - The expression matrix is large (~3 GB compressed, ~60k genes × ~20k samples).
-      We download it once, then filter to the columns we need.
-    - Gene IDs are versioned Ensembl IDs (ENSG...). The probemap maps them to symbols.
+Cross-cohort harmonization (TOIL vs GSE112509)
+    The two cohorts come from different pipelines and different units:
+        TOIL:       log2(TPM + 0.001)         (Xena recompute)
+        GSE112509:  DESeq2 size-factor counts (GEO supp)
+    To put them on comparable scales we use TCGA-train as the reference frame:
+        1. log2(x + 1)-transform the GSE112509 counts.
+        2. Compute per-gene mean & std from TCGA-SKCM TRAIN samples only.
+        3. Standardize BOTH cohorts with these TCGA-reference statistics.
+    Why a reference frame instead of per-cohort z-scoring? Cohort and class 2
+    (Benign Nevus) are perfectly confounded — all nevi live in GSE112509,
+    no tumors do — so per-cohort z-scoring forces nevi to mean 0/std 1 with
+    no tumor reference, erasing the very offset that makes nevi distinguishable
+    from tumors. Reference-based standardization preserves it: the TCGA mean
+    becomes the origin, and a nevus that is consistently below tumor expression
+    on (say) cell-cycle genes ends up with negative values for those genes,
+    which is the biologically meaningful signal.
+    This still does NOT remove all batch effects (joint reprocessing from
+    FASTQs would be the gold standard), and we are explicit about that on
+    the dataset page.
+
+Top-variable gene selection is computed on the TRAIN split only to avoid
+leakage into the test set.
 """
 
 import io
@@ -30,14 +55,8 @@ import torch
 from sklearn.model_selection import train_test_split
 from torch_geometric.data import Data
 
-# ----------------------------------------------------------------------------
-# Configuration — single source of truth in src/config.py
-# ----------------------------------------------------------------------------
 from src.config import NUM_NODES, CONFIDENCE_THRESHOLD, PROCESSED_DATASET_PATH
 
-# Stratified split done here (not in train.py) so that top-variable gene
-# selection only sees train samples — prevents test-set leakage into feature
-# selection. SEED must match src/train.py for reproducibility.
 SPLIT_SEED = 42
 TEST_FRAC = 0.15
 VAL_FRAC = 0.15
@@ -45,7 +64,7 @@ RAW_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "raw_toil"
 PROCESSED_DATASET_PATH.mkdir(parents=True, exist_ok=True)
 RAW_DATA_PATH.mkdir(parents=True, exist_ok=True)
 
-# TOIL recompute URLs on Xena
+# TOIL recompute (TCGA-SKCM)
 TOIL_BASE = "https://toil-xena-hub.s3.us-east-1.amazonaws.com/download/"
 URL_EXPR = TOIL_BASE + "TcgaTargetGtex_rsem_gene_tpm.gz"
 URL_PHENO = TOIL_BASE + "TcgaTargetGTEX_phenotype.txt.gz"
@@ -55,9 +74,15 @@ EXPR_LOCAL = RAW_DATA_PATH / "TcgaTargetGtex_rsem_gene_tpm.gz"
 PHENO_LOCAL = RAW_DATA_PATH / "TcgaTargetGTEX_phenotype.txt.gz"
 PROBEMAP_LOCAL = RAW_DATA_PATH / "gencode.v23.annotation.gene.probemap"
 
-OUTPUT_FILE = PROCESSED_DATASET_PATH / f"toil_skin_{NUM_NODES}_{CONFIDENCE_THRESHOLD}.pt"
+# GSE112509 (nevi)
+URL_GSE_COUNTS = (
+    "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE112nnn/GSE112509/"
+    "suppl/GSE112509_DESeq2_normalized_counts.txt.gz"
+)
+GSE_LOCAL = RAW_DATA_PATH / "GSE112509_DESeq2_normalized_counts.txt.gz"
 
-# SSL handling — same pattern as download_data.py
+OUTPUT_FILE = PROCESSED_DATASET_PATH / f"skcm_nevi_{NUM_NODES}_{CONFIDENCE_THRESHOLD}.pt"
+
 CA_BUNDLE = Path("./proxy-fix-bundle/allCAbundle.pem")
 INSECURE_SSL = os.environ.get("GAT_INSECURE_SSL") == "1"
 if INSECURE_SSL:
@@ -74,9 +99,6 @@ else:
     VERIFY = True
 
 
-# ----------------------------------------------------------------------------
-# Helpers
-# ----------------------------------------------------------------------------
 def download_to(url: str, dest: Path) -> None:
     if dest.exists():
         print(f"  cached: {dest.name} ({dest.stat().st_size / 1e6:.1f} MB)")
@@ -93,11 +115,21 @@ def download_to(url: str, dest: Path) -> None:
     print(f"  saved: {dest}")
 
 
-# ----------------------------------------------------------------------------
-# 1. Download files
-# ----------------------------------------------------------------------------
+def zscore_per_gene(df: pd.DataFrame) -> pd.DataFrame:
+    """Gene-wise z-score across samples (axis=1). Constant genes -> 0."""
+    mu = df.mean(axis=1)
+    sd = df.std(axis=1).replace(0, 1.0)
+    return df.sub(mu, axis=0).div(sd, axis=0)
+
+
+def standardize_with(df: pd.DataFrame, mu: pd.Series, sd: pd.Series) -> pd.DataFrame:
+    """Apply (x - mu)/sd using externally-supplied per-gene stats."""
+    sd_safe = sd.replace(0, 1.0)
+    return df.sub(mu, axis=0).div(sd_safe, axis=0)
+
+
 print("=" * 70)
-print("TOIL recompute: TCGA-SKCM + GTEx skin")
+print("TCGA-SKCM (TOIL) + GSE112509 nevi")
 print("=" * 70)
 
 if OUTPUT_FILE.exists():
@@ -106,50 +138,30 @@ if OUTPUT_FILE.exists():
     print(f"  {len(ds)} samples")
     raise SystemExit(0)
 
-print("\n[1/6] Downloading metadata files...")
+# ----------------------------------------------------------------------------
+# 1. TCGA-SKCM via TOIL
+# ----------------------------------------------------------------------------
+print("\n[1/7] Downloading TOIL metadata...")
 download_to(URL_PHENO, PHENO_LOCAL)
 download_to(URL_PROBEMAP, PROBEMAP_LOCAL)
 
-# ----------------------------------------------------------------------------
-# 2. Filter phenotype to skin samples we want
-# ----------------------------------------------------------------------------
-print("\n[2/6] Selecting skin samples from phenotype...")
+print("\n[2/7] Selecting TCGA-SKCM samples from TOIL phenotype...")
 pheno = pd.read_csv(
     PHENO_LOCAL, sep="\t", compression="gzip", low_memory=False, encoding="latin-1"
 )
-
-# Phenotype columns of interest:
-#   sample, _study, _primary_site, _sample_type, primary disease or tissue
-# Exact column names vary by dump; normalize.
 pheno.columns = [c.strip() for c in pheno.columns]
-print(f"  phenotype rows: {len(pheno)}")
-print(f"  columns: {list(pheno.columns)[:12]}...")
 
 study_col = "_study" if "_study" in pheno.columns else "study"
-site_col = "_primary_site" if "_primary_site" in pheno.columns else "primary_site"
-sample_type_col = (
-    "_sample_type" if "_sample_type" in pheno.columns else "sample_type"
+sample_type_col = "_sample_type" if "_sample_type" in pheno.columns else "sample_type"
+disease_col = next(
+    c for c in ("primary disease or tissue", "_primary_disease", "primary_disease")
+    if c in pheno.columns
 )
-
-# TCGA-SKCM tumor samples — disease is the canonical filter; SKCM = skin cutaneous melanoma
-disease_col = None
-for c in ("primary disease or tissue", "_primary_disease", "primary_disease"):
-    if c in pheno.columns:
-        disease_col = c
-        break
 
 is_tcga = pheno[study_col].astype(str).str.upper() == "TCGA"
-is_gtex = pheno[study_col].astype(str).str.upper() == "GTEX"
-
-tcga_skcm_mask = is_tcga & pheno[disease_col].astype(str).str.contains(
+skcm = pheno[is_tcga & pheno[disease_col].astype(str).str.contains(
     "skin cutaneous melanoma", case=False, na=False
-)
-gtex_skin_mask = is_gtex & pheno[site_col].astype(str).str.contains(
-    "skin", case=False, na=False
-)
-
-skcm_pheno = pheno[tcga_skcm_mask].copy()
-gtex_pheno = pheno[gtex_skin_mask].copy()
+)].copy()
 
 
 def label_skcm(row):
@@ -161,60 +173,92 @@ def label_skcm(row):
     return None
 
 
-skcm_pheno["y"] = skcm_pheno.apply(label_skcm, axis=1)
-skcm_pheno = skcm_pheno.dropna(subset=["y"])
-gtex_pheno["y"] = 2
+skcm["y"] = skcm.apply(label_skcm, axis=1)
+skcm = skcm.dropna(subset=["y"])
+skcm["y"] = skcm["y"].astype(int)
+print(f"  TCGA-SKCM Primary:    {(skcm['y'] == 0).sum()}")
+print(f"  TCGA-SKCM Metastasis: {(skcm['y'] == 1).sum()}")
+skcm_ids = set(skcm["sample"].tolist())
 
-selected = pd.concat(
-    [skcm_pheno[["sample", "y"]], gtex_pheno[["sample", "y"]]], ignore_index=True
-)
-selected["y"] = selected["y"].astype(int)
-print(f"  TCGA-SKCM primary:    {(skcm_pheno['y'] == 0).sum()}")
-print(f"  TCGA-SKCM metastasis: {(skcm_pheno['y'] == 1).sum()}")
-print(f"  GTEx skin (normal):   {len(gtex_pheno)}")
-print(f"  total selected:       {len(selected)}")
-
-selected_ids = set(selected["sample"].tolist())
-
-# ----------------------------------------------------------------------------
-# 3. Download expression matrix and read only the columns we need
-# ----------------------------------------------------------------------------
-print("\n[3/6] Downloading expression matrix (large, ~3 GB)...")
+print("\n[3/7] Loading TOIL expression matrix (large, ~3 GB)...")
 download_to(URL_EXPR, EXPR_LOCAL)
-
-print("\n[4/6] Reading expression — peeking header to get available columns...")
 header = pd.read_csv(EXPR_LOCAL, sep="\t", compression="gzip", nrows=0)
-all_cols = list(header.columns)
-gene_col = all_cols[0]  # usually 'sample' (genes-as-rows in TOIL)
-keep_cols = [gene_col] + [c for c in all_cols[1:] if c in selected_ids]
-print(f"  matching sample columns found: {len(keep_cols) - 1} / {len(selected)}")
+gene_col = list(header.columns)[0]
+keep_cols = [gene_col] + [c for c in header.columns[1:] if c in skcm_ids]
+print(f"  matched TCGA samples: {len(keep_cols) - 1} / {len(skcm_ids)}")
 
-print("  loading expression for those columns (this can take a few minutes)...")
-expr = pd.read_csv(
-    EXPR_LOCAL,
-    sep="\t",
-    compression="gzip",
-    usecols=keep_cols,
-    index_col=0,
+print("  reading expression...")
+toil = pd.read_csv(
+    EXPR_LOCAL, sep="\t", compression="gzip", usecols=keep_cols, index_col=0
 )
-print(f"  expression shape: {expr.shape}  (genes × samples)")
+print(f"  TOIL expression shape: {toil.shape}  (genes × samples)")
 
-# Map Ensembl IDs → gene symbols
-probemap = pd.read_csv(PROBEMAP_LOCAL, sep="\t", usecols=["id", "gene"]).set_index("id")
-expr = expr.join(probemap, how="inner").dropna(subset=["gene"])
-expr = expr.set_index("gene")
-expr = expr[~expr.index.duplicated(keep="first")]
-print(f"  after gene-symbol mapping: {expr.shape}")
+# Map versioned Ensembl → gene symbol via probemap
+probemap = pd.read_csv(
+    PROBEMAP_LOCAL, sep="\t", usecols=["id", "gene"]
+).set_index("id")
+toil = toil.join(probemap, how="inner").dropna(subset=["gene"])
+toil = toil.set_index("gene")
+toil = toil[~toil.index.duplicated(keep="first")]
+print(f"  after gene-symbol mapping: {toil.shape}")
 
 # ----------------------------------------------------------------------------
-# 5. Stratified split → top-variable gene selection on TRAIN ONLY → STRING PPI
+# 4. GSE112509 nevi
 # ----------------------------------------------------------------------------
-y_lookup = dict(zip(selected["sample"], selected["y"]))
-# Align labels with the expression columns we actually loaded, in column order.
-sample_ids = [c for c in expr.columns if c in y_lookup]
+print("\n[4/7] Downloading GSE112509 (nevi) supplementary counts...")
+download_to(URL_GSE_COUNTS, GSE_LOCAL)
+
+print("  reading DESeq2-normalized counts...")
+gse = pd.read_csv(GSE_LOCAL, sep="\t", compression="gzip", index_col=0)
+print(f"  GSE112509 raw shape: {gse.shape}  (genes × samples)")
+
+# Sample naming: '_N' suffix = nevus, '_M' suffix = melanoma. We only want nevi.
+nevus_cols = [c for c in gse.columns if c.endswith("_N")]
+print(f"  nevus samples (suffix _N): {len(nevus_cols)}")
+gse = gse[nevus_cols]
+
+# Gene IDs are versioned Ensembl, like the probemap. Map → symbol.
+gse = gse.join(probemap, how="inner").dropna(subset=["gene"])
+gse = gse.set_index("gene")
+gse = gse[~gse.index.duplicated(keep="first")]
+print(f"  after gene-symbol mapping: {gse.shape}")
+
+# Harmonize units: log2(x + 1) brings DESeq2 counts to a log scale comparable
+# in spread (not offset) to TOIL's log2(TPM + 0.001).
+gse_log = np.log2(gse.astype(float) + 1.0)
+
+# ----------------------------------------------------------------------------
+# 5. Intersect genes across cohorts (still on the log-scale, NOT yet z-scored)
+# ----------------------------------------------------------------------------
+print("\n[5/7] Intersecting genes across cohorts...")
+shared_genes = toil.index.intersection(gse_log.index)
+print(f"  shared genes: {len(shared_genes)}")
+toil = toil.loc[shared_genes]
+gse_log = gse_log.loc[shared_genes]
+
+# Combined log-scale matrix — used ONLY for top-variable gene selection.
+# Selecting on z-scored values would give every gene unit variance per cohort,
+# making the ranking noise-dominated (lncRNAs/pseudogenes win arbitrary ties).
+expr_log = pd.concat([toil, gse_log], axis=1)
+print(f"  combined log-expression: {expr_log.shape}  (genes × samples)")
+
+# Build label table aligned to expression columns
+y_lookup = {row["sample"]: int(row["y"]) for _, row in skcm.iterrows()}
+for col in nevus_cols:
+    y_lookup[col] = 2
+
+sample_ids = [c for c in expr_log.columns if c in y_lookup]
 labels = np.array([y_lookup[s] for s in sample_ids], dtype=int)
-idx = np.arange(len(sample_ids))
+print(f"  total samples: {len(sample_ids)}")
+print(f"    Primary:    {(labels == 0).sum()}")
+print(f"    Metastasis: {(labels == 1).sum()}")
+print(f"    Nevus:      {(labels == 2).sum()}")
 
+# ----------------------------------------------------------------------------
+# 6. Stratified split → top-variable genes (on log scale, train only) →
+#    per-cohort z-score on the chosen panel → STRING PPI
+# ----------------------------------------------------------------------------
+idx = np.arange(len(sample_ids))
 train_idx, temp_idx = train_test_split(
     idx, test_size=TEST_FRAC + VAL_FRAC, stratify=labels, random_state=SPLIT_SEED
 )
@@ -230,9 +274,56 @@ print(
     f"(seed={SPLIT_SEED})"
 )
 
-print(f"\n[5/6] Selecting top {NUM_NODES} variable genes (from TRAIN samples only)...")
-top_genes = expr[train_samples].var(axis=1).nlargest(NUM_NODES).index
-expr_top = expr.loc[top_genes]
+# Restrict to genes with a known HGNC-ish symbol (drops lncRNA/pseudogene
+# names like RP11-* / AC0* / CTD-* that are absent from STRING anyway). The
+# remaining set still covers ~20k genes — far more than NUM_NODES.
+def _is_protein_coding_symbol(sym: str) -> bool:
+    if not isinstance(sym, str):
+        return False
+    bad_prefixes = ("RP11-", "RP1-", "RP3-", "RP4-", "RP5-", "RP6-", "AC0",
+                    "AL", "AP00", "CTD-", "CTC-", "LINC", "MIR", "SNOR",
+                    "XLOC", "LOC")
+    return not (sym.startswith(bad_prefixes) or "." in sym)
+
+protein_coding = [g for g in expr_log.index if _is_protein_coding_symbol(g)]
+expr_log_pc = expr_log.loc[protein_coding]
+print(f"  filtered to protein-coding-ish symbols: {len(protein_coding)}")
+
+print(f"\n[6/7] Selecting top {NUM_NODES} variable genes (log scale, train only)...")
+# Use TCGA TRAIN samples for variance ranking. Cohort and class 2 are
+# perfectly confounded, so any train-only ranking that includes nevi would
+# pick up genes that just separate the two cohorts (a platform signature),
+# not biology.
+tcga_train_samples = [s for s in train_samples if s in toil.columns]
+top_genes = (
+    expr_log_pc[tcga_train_samples].var(axis=1).nlargest(NUM_NODES).index
+)
+toil_top = toil.loc[top_genes]
+gse_top = gse_log.loc[top_genes]
+
+# Cross-cohort harmonization on the chosen panel.
+#
+# Problem: TCGA is log2(TPM+0.001), GSE is log2(DESeq2 count+1). The two scales
+# differ by a global library-size/normalization offset. Per-gene per-cohort
+# z-scoring would over-correct: it would force every gene's nevus mean to
+# match its TCGA mean, erasing the very signal that lets the model tell nevi
+# apart from tumors.
+#
+# Instead: remove a SINGLE GLOBAL offset per cohort (the median across all
+# genes-and-samples in the panel) so the two scales overlap on average, then
+# standardize jointly by TCGA-train per-gene mean & std (the reference frame).
+# This preserves per-gene biology between cohorts.
+toil_offset = float(toil_top[tcga_train_samples].stack().median())
+gse_offset = float(gse_top.stack().median())
+print(f"  global offsets — TCGA-train: {toil_offset:.3f}  GSE: {gse_offset:.3f}")
+gse_top = gse_top - (gse_offset - toil_offset)  # shift GSE onto TCGA scale
+
+ref_mu = toil_top[tcga_train_samples].mean(axis=1)
+ref_sd = toil_top[tcga_train_samples].std(axis=1)
+toil_top = standardize_with(toil_top, ref_mu, ref_sd)
+gse_top = standardize_with(gse_top, ref_mu, ref_sd)
+
+expr_top = pd.concat([toil_top, gse_top], axis=1)
 genes_list = expr_top.index.tolist()
 
 print(f"  Querying STRING for PPI (confidence >= {CONFIDENCE_THRESHOLD})...")
@@ -256,20 +347,20 @@ edges = [
     for a, b in zip(df_ppi["preferredName_A"], df_ppi["preferredName_B"])
     if a in gene_to_idx and b in gene_to_idx
 ]
-edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
+if edges:
+    edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
+else:
+    edge_index = torch.empty((2, 0), dtype=torch.long)
 print(f"  edge_index shape: {tuple(edge_index.shape)}")
 
 # ----------------------------------------------------------------------------
-# 6. Build per-sample graphs
+# 7. Build per-sample graphs
 # ----------------------------------------------------------------------------
-print("\n[6/6] Building patient graphs...")
-
+print("\n[7/7] Building patient graphs...")
 dataset = []
 class_counts = {0: 0, 1: 0, 2: 0}
-# Iterate sample_ids (split order) so dataset indices line up with train/val/test idx.
 for sample_id in sample_ids:
     y = int(y_lookup[sample_id])
-    # TOIL values are already log2(TPM+0.001) — do NOT log-transform again.
     x = torch.tensor(expr_top[sample_id].values, dtype=torch.float).unsqueeze(1)
     if torch.isnan(x).any():
         x = torch.nan_to_num(x, nan=0.0)
@@ -282,14 +373,10 @@ for sample_id in sample_ids:
 print(f"  built {len(dataset)} graphs")
 print(f"    Primary:    {class_counts[0]}")
 print(f"    Metastasis: {class_counts[1]}")
-print(f"    Normal:     {class_counts[2]}")
+print(f"    Nevus:      {class_counts[2]}")
 
 torch.save(dataset, OUTPUT_FILE)
 SPLITS_FILE = OUTPUT_FILE.with_suffix(".splits.npz")
 np.savez(SPLITS_FILE, train=train_idx, val=val_idx, test=test_idx, seed=SPLIT_SEED)
 print(f"\nSaved: {OUTPUT_FILE}")
-print(f"Saved: {SPLITS_FILE}  (use these splits in train.py — gene selection used train only)")
-print(
-    "\nNext: update train_model.py to point at this file:\n"
-    f"  dataset_path = Path('{OUTPUT_FILE}')"
-)
+print(f"Saved: {SPLITS_FILE}")

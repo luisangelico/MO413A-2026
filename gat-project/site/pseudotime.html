@@ -6,7 +6,8 @@
                color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
                border-bottom: 3px solid #1f77b4;
                box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em; }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
 .site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
                   letter-spacing: 0.01em; color: white; line-height: 1.2; }
 .site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
@@ -17,9 +18,21 @@
               transition: background 0.12s, color 0.12s; }
 .site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
 .site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
 @media (max-width: 700px) {
   .site-header h1.site-title { font-size: 1.1em; }
   .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
 }
 
   body { font-family:-apple-system,system-ui,sans-serif; margin:0;
@@ -42,9 +55,10 @@
 </style></head><body>
 <header class="site-header">
   <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="pseudotime.html" title="EN">EN</a><a href="pt-br/pseudotime.html" title="Switch to PT">PT</a></div>
     <h1 class="site-title">Skin Cancer Gene-Network Analysis</h1>
     <div class="tagline">Graph attention networks over PPI for melanoma classification</div>
-    <div class="subtitle">Run: <code>run_multiseed_seed2</code></div>
+    <div class="subtitle">Run: <code>run_multiseed_seed1</code></div>
     <nav class="site-nav">
     <a href="index.html">Predictions</a>
     <a href="about-gat.html">What is a GAT?</a>
@@ -62,7 +76,7 @@
 <div class="page">
 
 <h1>Pseudotime — how the model's focus shifts from healthy skin to metastasis</h1>
-<p class="meta">Run: <code>run_multiseed_seed2</code></p>
+<p class="meta">Run: <code>run_multiseed_seed1</code></p>
 
 <div class="plain">
   <strong>In one sentence.</strong> We sort every sample on a "tumor-likeness"
@@ -119,7 +133,7 @@
 </p>
 <table>
 <tr><th>decile</th><th>Normal</th><th>Primary</th><th>Metastasis</th><th>total</th></tr>
-<tr><td>1</td><td>257</td><td>0</td><td>0</td><td>257</td></tr><tr><td>2</td><td>256</td><td>0</td><td>0</td><td>256</td></tr><tr><td>3</td><td>43</td><td>0</td><td>1</td><td>44</td></tr><tr><td>4</td><td>71</td><td>2</td><td>0</td><td>73</td></tr><tr><td>5</td><td>106</td><td>19</td><td>4</td><td>129</td></tr><tr><td>6</td><td>56</td><td>14</td><td>25</td><td>95</td></tr><tr><td>7</td><td>11</td><td>12</td><td>41</td><td>64</td></tr><tr><td>8</td><td>0</td><td>0</td><td>93</td><td>93</td></tr><tr><td>9</td><td>0</td><td>0</td><td>148</td><td>148</td></tr><tr><td>10</td><td>0</td><td>0</td><td>25</td><td>25</td></tr>
+<tr><td>1</td><td>9</td><td>0</td><td>0</td><td>9</td></tr><tr><td>2</td><td>9</td><td>0</td><td>0</td><td>9</td></tr><tr><td>3</td><td>2</td><td>4</td><td>2</td><td>8</td></tr><tr><td>4</td><td>0</td><td>4</td><td>28</td><td>32</td></tr><tr><td>5</td><td>0</td><td>12</td><td>89</td><td>101</td></tr><tr><td>6</td><td>0</td><td>10</td><td>76</td><td>86</td></tr><tr><td>7</td><td>0</td><td>4</td><td>88</td><td>92</td></tr><tr><td>8</td><td>0</td><td>0</td><td>47</td><td>47</td></tr><tr><td>9</td><td>0</td><td>1</td><td>14</td><td>15</td></tr><tr><td>10</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
 </table>
 
 <h2>Heatmap: gene attention across pseudotime</h2>

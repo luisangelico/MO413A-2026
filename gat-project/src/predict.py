@@ -60,7 +60,7 @@ if NUM_CLASSES == 2:
 # ============================================================================
 # Interactive Mode
 # ============================================================================
-_all_class_names = {0: 'Primary Tumor', 1: 'Metastasis', 2: 'Normal Tissue'}
+from src.config import CLASS_NAMES as _all_class_names
 _all_class_colors = {0: '🔴', 1: '🟠', 2: '🟢'}
 class_names = {i: _all_class_names[i] for i in range(NUM_CLASSES)}
 class_colors = {i: _all_class_colors[i] for i in range(NUM_CLASSES)}
