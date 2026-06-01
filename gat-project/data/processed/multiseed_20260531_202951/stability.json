@@ -32,43 +32,43 @@
     "Primary Tumor": {
       "spearman_mean": NaN,
       "spearman_std": NaN,
-      "top50_jaccard_mean": 0.27655341910151077,
-      "top50_jaccard_std": 0.11771318430256648
+      "top50_jaccard_mean": 0.21005369679477986,
+      "top50_jaccard_std": 0.14930462159008331
     },
     "Metastasis": {
-      "spearman_mean": -0.03452071187904287,
-      "spearman_std": 0.13555689988026196,
-      "top50_jaccard_mean": 0.34883517377957707,
-      "top50_jaccard_std": 0.039146428449896846
+      "spearman_mean": -0.003984949361323764,
+      "spearman_std": 0.09934670562378933,
+      "top50_jaccard_mean": 0.42820407255621235,
+      "top50_jaccard_std": 0.07282352817181316
     },
     "Benign Nevus": {
-      "spearman_mean": 0.00965279920944554,
-      "spearman_std": 0.12208146870503865,
-      "top50_jaccard_mean": 0.3019152668751744,
-      "top50_jaccard_std": 0.06580742651882095
+      "spearman_mean": 0.023494820444033622,
+      "spearman_std": 0.08307929007454533,
+      "top50_jaccard_mean": 0.32538130646729047,
+      "top50_jaccard_std": 0.11239633719153186
     },
     "Tumor - Normal": {
-      "spearman_mean": -0.0049568991294392985,
-      "spearman_std": 0.1202516542311972,
-      "top50_jaccard_mean": 0.3129613709103334,
-      "top50_jaccard_std": 0.05606608192846682
+      "spearman_mean": 0.040304692957639096,
+      "spearman_std": 0.09172244823302723,
+      "top50_jaccard_mean": 0.3109690943701896,
+      "top50_jaccard_std": 0.08507094688671844
     },
     "Metastasis - Primary": {
-      "spearman_mean": 0.016917228059038038,
-      "spearman_std": 0.14972672474491328,
-      "top50_jaccard_mean": 0.32416539024985047,
-      "top50_jaccard_std": 0.08226273543028179
+      "spearman_mean": 0.01610762698442427,
+      "spearman_std": 0.11977415679090908,
+      "top50_jaccard_mean": 0.3337019398230559,
+      "top50_jaccard_std": 0.11279052096730031
     }
   },
   "embedding": {
     "knn_jaccard_k10_mean": 0.6206917998326669,
     "knn_jaccard_k10_std": 0.15420561690624376,
-    "procrustes_mean_disparity": 0.07434640960620266,
+    "procrustes_mean_disparity": 0.07434640578135553,
     "n_common_samples": 74
   },
   "pseudotime": {
-    "mean_std": 0.027806458040669425,
-    "median_std": 0.02647542782796497,
-    "max_std": 0.08585614607779561
+    "mean_std": 0.02780645654923153,
+    "median_std": 0.0264754109644719,
+    "max_std": 0.08585611038049296
   }
 }

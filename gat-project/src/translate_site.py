@@ -47,6 +47,7 @@ from src.site_header import HEADER_CSS, render_header
 
 PAGES = {
     "index.html":      ("predictions", ""),
+    "exploration.html": ("exploration", ""),
     "overview.html":   ("overview",    ""),
     "dataset.html":    ("dataset",     ""),
     "embeddings.html": ("embeddings",  ""),
@@ -61,6 +62,7 @@ SHARED_ASSETS = [
     "pseudotime_heatmap.png", "pseudotime_lines.png",
     "stability_accuracy.png", "stability_spearman.png",
     "stability_knn_jaccard.png", "stability_pseudotime.png",
+    "exploration_data.js",
 ]
 
 # Tags whose text content we never translate.

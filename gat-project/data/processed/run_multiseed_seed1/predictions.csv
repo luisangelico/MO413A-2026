@@ -1,73 +1,73 @@
 patient_id,true_label,predicted_label,confidence,correct,split
-TCGA-ER-A19E-06,Metastasis,Metastasis,0.5783694982528687,True,test
-TCGA-D3-A3CC-06,Metastasis,Metastasis,0.6076971888542175,True,test
-TCGA-EB-A299-01,Primary Tumor,Benign Nevus,0.50457763671875,False,test
-TCGA-EE-A29C-06,Metastasis,Metastasis,0.6174973845481873,True,test
-TCGA-BF-A3DM-01,Primary Tumor,Primary Tumor,0.5198934078216553,True,test
+TCGA-ER-A19E-06,Metastasis,Metastasis,0.5783696174621582,True,test
+TCGA-D3-A3CC-06,Metastasis,Metastasis,0.607697069644928,True,test
+TCGA-EB-A299-01,Primary Tumor,Benign Nevus,0.5045775175094604,False,test
+TCGA-EE-A29C-06,Metastasis,Metastasis,0.6174975037574768,True,test
+TCGA-BF-A3DM-01,Primary Tumor,Primary Tumor,0.5198933482170105,True,test
 TCGA-EE-A29N-06,Metastasis,Metastasis,0.6984593272209167,True,test
-TCGA-EE-A29E-06,Metastasis,Metastasis,0.5239232182502747,True,test
-TCGA-BF-A5EP-01,Primary Tumor,Metastasis,0.6132441163063049,False,test
-TCGA-FW-A3R5-06,Metastasis,Metastasis,0.7047805190086365,True,test
-TCGA-D9-A4Z5-01,Primary Tumor,Metastasis,0.5354362726211548,False,test
+TCGA-EE-A29E-06,Metastasis,Metastasis,0.5239231586456299,True,test
+TCGA-BF-A5EP-01,Primary Tumor,Metastasis,0.6132442355155945,False,test
+TCGA-FW-A3R5-06,Metastasis,Metastasis,0.7047802805900574,True,test
+TCGA-D9-A4Z5-01,Primary Tumor,Metastasis,0.5354359149932861,False,test
 TCGA-EE-A2MS-06,Metastasis,Metastasis,0.6802797913551331,True,test
 TCGA-XV-A9VZ-01,Primary Tumor,Primary Tumor,0.5783205032348633,True,test
-TCGA-YD-A89C-06,Metastasis,Metastasis,0.6404397487640381,True,test
+TCGA-YD-A89C-06,Metastasis,Metastasis,0.6404398679733276,True,test
 TCGA-FS-A1Z0-06,Metastasis,Metastasis,0.7212145924568176,True,test
-TCGA-EE-A2M7-06,Metastasis,Metastasis,0.6084151864051819,True,test
+TCGA-EE-A2M7-06,Metastasis,Metastasis,0.6084151268005371,True,test
 TCGA-ER-A19F-06,Metastasis,Metastasis,0.6495170593261719,True,test
 TCGA-EB-A5SG-06,Metastasis,Metastasis,0.6224249005317688,True,test
 TCGA-D9-A6EA-06,Metastasis,Metastasis,0.6172488927841187,True,test
-TCGA-D9-A3Z4-01,Primary Tumor,Metastasis,0.7107331156730652,False,test
-TCGA-WE-AA9Y-06,Metastasis,Metastasis,0.6989732980728149,True,test
-TCGA-WE-A8ZO-06,Metastasis,Metastasis,0.6809722185134888,True,test
-1397_N,Benign Nevus,Benign Nevus,0.9178367853164673,True,test
+TCGA-D9-A3Z4-01,Primary Tumor,Metastasis,0.7107330560684204,False,test
+TCGA-WE-AA9Y-06,Metastasis,Metastasis,0.6989731788635254,True,test
+TCGA-WE-A8ZO-06,Metastasis,Metastasis,0.6809722781181335,True,test
+1397_N,Benign Nevus,Benign Nevus,0.9178369045257568,True,test
 TCGA-FR-A729-06,Metastasis,Metastasis,0.6087775826454163,True,test
-TCGA-ER-A19O-06,Metastasis,Metastasis,0.567751944065094,True,test
+TCGA-ER-A19O-06,Metastasis,Metastasis,0.5677517652511597,True,test
 TCGA-D3-A51R-06,Metastasis,Primary Tumor,0.5896522402763367,False,test
-TCGA-D9-A148-06,Metastasis,Metastasis,0.7172598838806152,True,test
-TCGA-D3-A51G-06,Metastasis,Metastasis,0.549534022808075,True,test
-TCGA-EE-A29X-06,Metastasis,Metastasis,0.7089733481407166,True,test
-TCGA-EB-A3HV-01,Primary Tumor,Primary Tumor,0.5922123193740845,True,test
-TCGA-FS-A1ZY-06,Metastasis,Metastasis,0.5797532796859741,True,test
+TCGA-D9-A148-06,Metastasis,Metastasis,0.71725994348526,True,test
+TCGA-D3-A51G-06,Metastasis,Metastasis,0.5495338439941406,True,test
+TCGA-EE-A29X-06,Metastasis,Metastasis,0.7089735269546509,True,test
+TCGA-EB-A3HV-01,Primary Tumor,Primary Tumor,0.5922123789787292,True,test
+TCGA-FS-A1ZY-06,Metastasis,Metastasis,0.5797532200813293,True,test
 TCGA-EE-A20F-06,Metastasis,Metastasis,0.6639048457145691,True,test
-TCGA-EE-A29L-06,Metastasis,Metastasis,0.6106407046318054,True,test
+TCGA-EE-A29L-06,Metastasis,Metastasis,0.6106407642364502,True,test
 TCGA-ER-A19N-06,Metastasis,Metastasis,0.6552249789237976,True,test
-TCGA-GN-A262-06,Metastasis,Metastasis,0.5408391356468201,True,test
-TCGA-FS-A4FB-06,Metastasis,Metastasis,0.5839328169822693,True,test
-TCGA-IH-A3EA-01,Primary Tumor,Primary Tumor,0.533665120601654,True,test
-TCGA-EE-A2GL-06,Metastasis,Metastasis,0.7452504634857178,True,test
-LE-117-RB-118_N,Benign Nevus,Primary Tumor,0.39800041913986206,False,test
-TCGA-ER-A196-01,Primary Tumor,Primary Tumor,0.664360761642456,True,test
-TCGA-FS-A1ZA-06,Metastasis,Metastasis,0.6224273443222046,True,test
+TCGA-GN-A262-06,Metastasis,Metastasis,0.5408390760421753,True,test
+TCGA-FS-A4FB-06,Metastasis,Metastasis,0.5839327573776245,True,test
+TCGA-IH-A3EA-01,Primary Tumor,Primary Tumor,0.5336652398109436,True,test
+TCGA-EE-A2GL-06,Metastasis,Metastasis,0.7452505230903625,True,test
+LE-117-RB-118_N,Benign Nevus,Primary Tumor,0.39800044894218445,False,test
+TCGA-ER-A196-01,Primary Tumor,Primary Tumor,0.6643607020378113,True,test
+TCGA-FS-A1ZA-06,Metastasis,Metastasis,0.6224274635314941,True,test
 TCGA-ER-A42L-06,Metastasis,Metastasis,0.7076562643051147,True,test
-TCGA-ER-A42K-06,Metastasis,Metastasis,0.6089262962341309,True,test
+TCGA-ER-A42K-06,Metastasis,Metastasis,0.6089263558387756,True,test
 TCGA-ER-A197-06,Metastasis,Metastasis,0.6271940469741821,True,test
 TCGA-LH-A9QB-06,Metastasis,Metastasis,0.5548695921897888,True,test
 LE-105-TF-106_N,Benign Nevus,Benign Nevus,0.9907207489013672,True,test
-TCGA-FS-A4F4-06,Metastasis,Metastasis,0.6142655611038208,True,test
-TCGA-HR-A2OG-06,Metastasis,Metastasis,0.683238685131073,True,test
+TCGA-FS-A4F4-06,Metastasis,Metastasis,0.6142656207084656,True,test
+TCGA-HR-A2OG-06,Metastasis,Metastasis,0.6832388043403625,True,test
 TCGA-EB-A44P-01,Primary Tumor,Metastasis,0.6393780708312988,False,test
-TCGA-DA-A1I2-06,Metastasis,Metastasis,0.7554753422737122,True,test
-TCGA-ER-A19H-06,Metastasis,Metastasis,0.6803407073020935,True,test
+TCGA-DA-A1I2-06,Metastasis,Metastasis,0.7554754018783569,True,test
+TCGA-ER-A19H-06,Metastasis,Metastasis,0.6803407669067383,True,test
 TCGA-D3-A2JN-06,Metastasis,Metastasis,0.576002299785614,True,test
-TCGA-EB-A5FP-01,Primary Tumor,Primary Tumor,0.5599177479743958,True,test
-TCGA-GN-A264-06,Metastasis,Metastasis,0.6267552971839905,True,test
+TCGA-EB-A5FP-01,Primary Tumor,Primary Tumor,0.5599178075790405,True,test
+TCGA-GN-A264-06,Metastasis,Metastasis,0.6267553567886353,True,test
 TCGA-BF-A1Q0-01,Primary Tumor,Metastasis,0.7397127747535706,False,test
 TCGA-WE-A8ZR-06,Metastasis,Metastasis,0.692923367023468,True,test
 TCGA-EB-A3XD-01,Primary Tumor,Primary Tumor,0.5734185576438904,True,test
 TCGA-FS-A1ZF-06,Metastasis,Metastasis,0.6086616516113281,True,test
 TCGA-BF-AAOX-01,Primary Tumor,Primary Tumor,0.5160579681396484,True,test
-TCGA-ER-A2NG-06,Metastasis,Metastasis,0.6585677266120911,True,test
-TCGA-DA-A3F5-06,Metastasis,Metastasis,0.5893329381942749,True,test
+TCGA-ER-A2NG-06,Metastasis,Metastasis,0.6585676670074463,True,test
+TCGA-DA-A3F5-06,Metastasis,Metastasis,0.5893329977989197,True,test
 TCGA-GF-A2C7-01,Primary Tumor,Primary Tumor,0.5306993722915649,True,test
-TCGA-EE-A2M5-06,Metastasis,Primary Tumor,0.5015151500701904,False,test
+TCGA-EE-A2M5-06,Metastasis,Primary Tumor,0.5015152096748352,False,test
 TCGA-ER-A2NC-06,Metastasis,Metastasis,0.6504904627799988,True,test
-TCGA-D3-A8GI-06,Metastasis,Metastasis,0.5263046026229858,True,test
-TCGA-XV-AB01-06,Metastasis,Metastasis,0.5467283725738525,True,test
+TCGA-D3-A8GI-06,Metastasis,Metastasis,0.5263047218322754,True,test
+TCGA-XV-AB01-06,Metastasis,Metastasis,0.5467284917831421,True,test
 TCGA-FS-A1ZC-06,Metastasis,Primary Tumor,0.5528140068054199,False,test
 TCGA-FR-A3YO-06,Metastasis,Metastasis,0.5657126903533936,True,test
 TCGA-EE-A2MT-06,Metastasis,Metastasis,0.6640599370002747,True,test
-TCGA-D3-A8GQ-06,Metastasis,Metastasis,0.5472371578216553,True,test
+TCGA-D3-A8GQ-06,Metastasis,Metastasis,0.5472372770309448,True,test
 TCGA-YG-AA3P-06,Metastasis,Metastasis,0.5670240521430969,True,test
 TCGA-3N-A9WC-06,Metastasis,Metastasis,0.7078150510787964,True,test
 TCGA-FS-A1YW-06,Metastasis,Metastasis,0.7245516777038574,True,test

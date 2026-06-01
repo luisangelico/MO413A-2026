@@ -41,6 +41,7 @@ PROJECT_TAGLINE = {
 # (slug, href). Hrefs are relative to the language root.
 NAV_LINKS = [
     ("predictions", "index.html"),
+    ("exploration", "exploration.html"),
     ("about-gat",   "about-gat.html"),
     ("overview",    "overview.html"),
     ("dataset",     "dataset.html"),
@@ -54,6 +55,7 @@ NAV_LINKS = [
 # Per-slug labels for each language.
 NAV_LABEL = {
     "predictions": {"en": "Predictions",      "pt-br": "Predições"},
+    "exploration": {"en": "Exploration",      "pt-br": "Exploração"},
     "about-gat":   {"en": "What is a GAT?",   "pt-br": "O que é uma GAT?"},
     "overview":    {"en": "Run overview",     "pt-br": "Visão da execução"},
     "dataset":     {"en": "Dataset",          "pt-br": "Base de dados"},
@@ -135,6 +137,7 @@ T = {
 PAGE_TITLE = {
     "en": {
         "predictions": "Predictions — Skin Cancer Gene-Network Analysis",
+        "exploration": "Exploration — Skin Cancer Gene-Network Analysis",
         "about-gat":   "What is a GAT? — Skin Cancer Gene-Network Analysis",
         "overview":    "Run overview — Skin Cancer Gene-Network Analysis",
         "dataset":     "Dataset — Skin Cancer Gene-Network Analysis",
@@ -146,6 +149,7 @@ PAGE_TITLE = {
     },
     "pt-br": {
         "predictions": "Predições — Análise de Câncer de Pele em Redes Gênicas",
+        "exploration": "Exploração — Análise de Câncer de Pele em Redes Gênicas",
         "about-gat":   "O que é uma GAT? — Análise de Câncer de Pele em Redes Gênicas",
         "overview":    "Visão da execução — Análise de Câncer de Pele em Redes Gênicas",
         "dataset":     "Base de dados — Análise de Câncer de Pele em Redes Gênicas",
