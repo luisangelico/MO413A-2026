@@ -1,0 +1,17 @@
+{
+  "dataset": "skcm_nevi_1000_200.pt",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "epochs": 500,
+  "batch_size": 32,
+  "lr": 0.001,
+  "weight_decay": 0.0005,
+  "patience": 50,
+  "hidden_channels": 128,
+  "num_classes": 3
+}

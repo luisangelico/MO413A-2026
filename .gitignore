@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Large raw datasets (exceed GitHub's 100 MB limit; rebuild via scripts/download_toil.py)
+project3-final/data/raw/TcgaTargetGtex_rsem_gene_tpm.gz
+gat-project/data/raw_toil/TcgaTargetGtex_rsem_gene_tpm.gz
