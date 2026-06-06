@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Stability — Skin Cancer Gene-Network Analysis (PT)</title>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Estabilidade — Análise de Câncer de Pele em Redes Gênicas</title>
 <style>
 
 .site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
@@ -59,8 +59,9 @@
     <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
     <nav class="site-nav">
     <a href="../pt-br/index.html">Predições</a>
+    <a href="../pt-br/exploration.html">Exploração</a>
     <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
-    <a href="../pt-br/overview.html">Visão da execução</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
     <a href="../pt-br/dataset.html">Base de dados</a>
     <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
     <a href="../pt-br/embeddings.html">Embeddings</a>
@@ -70,106 +71,110 @@
     </nav>
   </div>
 </header>
-<div style="background:#fffbf2;border-left:3px solid #e0a020;padding:0.7em 1em;margin:1em auto;max-width:1100px;font-family:-apple-system,system-ui,sans-serif;line-height:1.55;"><strong>Versão em português em construção.</strong> O texto narrativo desta página está atualmente em inglês — números, tabelas e legendas das figuras são independentes de idioma. As páginas <em>O que é uma GAT?</em> e <em>Base de dados</em> já têm tradução completa.</div><div class="page">
+<div class="page">
 
-<h1>Multi-seed stability — are the findings real?</h1>
+<h1>Estabilidade multi-seed — os achados são reais?</h1>
 
 <div class="plain">
-  <strong>The question.</strong> If we retrain the same architecture from
-  scratch with a different random seed, do we recover the same answers?
-  If yes, the project's findings are reproducible. If no, any single-seed
-  result is anecdotal and should be reported as a consensus.
+  <strong>A pergunta.</strong> Se retreinamos a mesma arquitetura do zero
+  com uma seed aleatória diferente, recuperamos as mesmas respostas? Se
+  sim, os achados do projeto são reprodutíveis. Se não, qualquer
+  resultado de seed única é anedótico e deve ser reportado como
+  consenso.
 </div>
 
-<h2>1. Performance variance</h2>
+<h2>1. Variância de desempenho</h2>
 <p>
-  Five seeds, identical architecture and data, different initializations:
+  Cinco seeds, arquitetura e dados idênticos, inicializações diferentes:
 </p>
 <ul>
-  <li><strong>Test accuracy:</strong> 78.38% ± 5.67%
-      (range 71.62–85.14%, 95% CI half-width
-      ≈ 4.97%).</li>
+  <li><strong>Acurácia no teste:</strong> 78,38% ± 5,67%
+      (faixa 71,62–85,14%, semilargura do IC 95%
+      ≈ 4,97%).</li>
 </ul>
 <img src="stability_accuracy.png"
-     alt="Per-seed accuracy and per-class F1">
+     alt="Acurácia por seed e F1 por classe">
 
-<h2>2. Attention-ranking stability</h2>
+<h2>2. Estabilidade do ranking de atenção</h2>
 <p>
-  We computed each seed's per-class node-importance vector (1000 genes)
-  and asked: do the seeds rank genes in the same order?
+  Calculamos o vetor de importância de nó por classe (1000 genes) de cada
+  seed e perguntamos: as seeds ordenam os genes na mesma ordem?
 </p>
 <ul>
-  <li><strong>Spearman ρ</strong> compares full rankings (1.0 = identical
-    order, 0.0 = unrelated).</li>
-  <li><strong>Top-50 Jaccard</strong> compares which 50 genes each seed
-    flagged as most important (1.0 = same set, 0.0 = no overlap).</li>
+  <li><strong>ρ de Spearman</strong> compara rankings completos (1,0 = ordem
+    idêntica, 0,0 = sem relação).</li>
+  <li><strong>Jaccard top-50</strong> compara quais 50 genes cada seed
+    marcou como mais importantes (1,0 = mesmo conjunto, 0,0 = sem
+    interseção).</li>
 </ul>
 <table>
-<tr><th>ranking</th><th>Spearman ρ</th><th>top-50 Jaccard</th></tr>
-<tr><td>Primary Tumor</td><td>nan ± nan</td><td>0.277 ± 0.118</td></tr><tr><td>Metastasis</td><td>-0.035 ± 0.136</td><td>0.349 ± 0.039</td></tr><tr><td>Benign Nevus</td><td>0.010 ± 0.122</td><td>0.302 ± 0.066</td></tr><tr><td>Tumor - Normal</td><td>-0.005 ± 0.120</td><td>0.313 ± 0.056</td></tr><tr><td>Metastasis - Primary</td><td>0.017 ± 0.150</td><td>0.324 ± 0.082</td></tr>
+<tr><th>ranking</th><th>ρ de Spearman</th><th>Jaccard top-50</th></tr>
+<tr><td>Tumor Primário</td><td>nan ± nan</td><td>0,327 ± 0,112</td></tr><tr><td>Metástase</td><td>0,008 ± 0,117</td><td>0,355 ± 0,043</td></tr><tr><td>Nevo Benigno</td><td>-0,028 ± 0,143</td><td>0,294 ± 0,086</td></tr><tr><td>Tumor − Normal</td><td>-0,041 ± 0,095</td><td>0,310 ± 0,059</td></tr><tr><td>Metástase − Primário</td><td>0,137 ± 0,092</td><td>0,377 ± 0,068</td></tr>
 </table>
 <img src="stability_spearman.png"
-     alt="Cross-seed Spearman heatmap per ranking">
+     alt="Heatmap de Spearman entre seeds por ranking">
 
 <div class="callout">
-  <strong>Reading guide.</strong>
-  ρ ≥ 0.8 means rankings are highly stable — single-seed top-K results
-  are defensible. 0.5–0.8 means moderately stable; report
-  <em>consensus</em> rankings (mean rank across seeds) rather than any
-  one seed's. Below 0.5 means the rankings shuffle from seed to seed and
-  conclusions need to be tempered.
+  <strong>Guia de leitura.</strong>
+  ρ ≥ 0,8 significa rankings altamente estáveis — resultados top-K de uma
+  única seed são defensáveis. 0,5–0,8 significa moderadamente estáveis;
+  reporte rankings <em>de consenso</em> (rank médio entre seeds) em vez
+  do de uma única seed. Abaixo de 0,5, os rankings se embaralham entre
+  seeds e as conclusões precisam ser moderadas.
   <br><br>
-  Difference rankings (e.g. <em>Metastasis − Primary</em>) are
-  intrinsically noisier than per-class rankings — noise compounds when you
-  subtract two estimates — so expect lower numbers there. The
-  <code>stability_consensus_top20.csv</code> file alongside this page
-  lists the top-20 genes by mean rank across seeds, with the standard
-  deviation of each gene's rank — that is the publishable list.
+  Rankings de diferença (ex.: <em>Metástase − Primário</em>) são
+  intrinsecamente mais ruidosos que os por classe — o ruído compõe ao
+  subtrair duas estimativas — então espere números menores aí. O arquivo
+  <code>stability_consensus_top20.csv</code> ao lado desta página lista
+  os 20 genes mais bem ranqueados por rank médio entre seeds, com o
+  desvio-padrão do rank de cada gene — essa é a lista publicável.
 </div>
 
-<h2>2. Embedding geometry across seeds</h2>
+<h2>2. Geometria dos embeddings entre seeds</h2>
 <p>
-  Even when two seeds learn slightly different 64-dimensional spaces, the
-  question is whether the <em>shape</em> of the cloud is the same — does
-  each sample land near the same neighbors regardless of seed?
+  Mesmo quando duas seeds aprendem espaços 64-dimensionais ligeiramente
+  diferentes, a questão é se o <em>formato</em> da nuvem é o mesmo —
+  cada amostra cai perto dos mesmos vizinhos independentemente da seed?
 </p>
 <ul>
-  <li><strong>kNN Jaccard (k=10):</strong>
-      0.621 ± 0.154
-      across seed pairs over 74 samples present in
-      every seed's test split. <em>1.0 = identical neighborhoods, 0.0 = no overlap.</em></li>
-  <li><strong>Procrustes disparity:</strong>
-      0.0743 (0 = identical up to rotation/scale).</li>
+  <li><strong>Jaccard kNN (k=10):</strong>
+      0,621 ± 0,154
+      entre pares de seeds em 74 amostras presentes na divisão de teste de
+      todas as seeds. <em>1,0 = vizinhanças idênticas, 0,0 = sem
+      interseção.</em></li>
+  <li><strong>Disparidade de Procrustes:</strong>
+      0,0743 (0 = idênticos a menos de rotação/escala).</li>
 </ul>
 <img src="stability_knn_jaccard.png"
-     alt="Per-sample kNN Jaccard across seeds, by class">
+     alt="Jaccard kNN por amostra entre seeds, por classe">
 
 
-<h2>3. Pseudotime stability</h2>
+<h2>3. Estabilidade do pseudotempo</h2>
 <p>
-  Each seed produces its own Normal → Metastasis pseudotime axis. We
-  align the direction across seeds (flip if anti-correlated), then look
-  at how much each sample's pseudotime varies from seed to seed. Tight
-  error bars mean the model agrees on where this sample sits along the
-  progression axis; large bars mean the sample is ambiguous.
+  Cada seed produz seu próprio eixo de pseudotempo Normal → Metástase.
+  Alinhamos a direção entre seeds (invertendo se houver anticorrelação) e
+  observamos quanto o pseudotempo de cada amostra varia entre as seeds.
+  Barras de erro estreitas indicam que o modelo concorda sobre onde a
+  amostra está no eixo de progressão; barras largas indicam amostras
+  ambíguas.
 </p>
 <ul>
-  <li><strong>Per-sample σ:</strong> mean = 0.028,
-      median = 0.026, max = 0.086
-      (on a 0–1 axis).</li>
+  <li><strong>σ por amostra:</strong> média = 0,028,
+      mediana = 0,026, máximo = 0,086
+      (em um eixo 0–1).</li>
 </ul>
 <img src="stability_pseudotime.png"
-     alt="Per-sample pseudotime across seeds">
+     alt="Pseudotempo por amostra entre seeds">
 
 
-<h2>What this means</h2>
+<h2>O que isso significa</h2>
 <p>
-  Reproducibility is not a bonus check — it is the difference between an
-  anecdote and a finding. A model that lands on the same gene rankings,
-  the same neighborhood structure, and the same per-sample progression
-  position regardless of initialization is one whose conclusions can be
-  cited. Numbers above tell you, per dimension of the analysis, exactly
-  how much weight each finding bears.
+  Reprodutibilidade não é checagem extra — é a diferença entre uma anedota
+  e um achado. Um modelo que chega aos mesmos rankings de genes, à mesma
+  estrutura de vizinhança e à mesma posição de progressão por amostra
+  independentemente da inicialização é um cujas conclusões podem ser
+  citadas. Os números acima dizem, por dimensão da análise, exatamente
+  quanto peso cada achado carrega.
 </p>
 
 </div>

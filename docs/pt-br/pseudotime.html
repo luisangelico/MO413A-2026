@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Pseudotime — Skin Cancer Gene-Network Analysis (PT)</title>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Pseudotempo — Análise de Câncer de Pele em Redes Gênicas</title>
 <style>
 
 .site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
@@ -60,8 +60,9 @@
     <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
     <nav class="site-nav">
     <a href="../pt-br/index.html">Predições</a>
+    <a href="../pt-br/exploration.html">Exploração</a>
     <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
-    <a href="../pt-br/overview.html">Visão da execução</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
     <a href="../pt-br/dataset.html">Base de dados</a>
     <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
     <a href="../pt-br/embeddings.html">Embeddings</a>
@@ -71,111 +72,116 @@
     </nav>
   </div>
 </header>
-<div style="background:#fffbf2;border-left:3px solid #e0a020;padding:0.7em 1em;margin:1em auto;max-width:1100px;font-family:-apple-system,system-ui,sans-serif;line-height:1.55;"><strong>Versão em português em construção.</strong> O texto narrativo desta página está atualmente em inglês — números, tabelas e legendas das figuras são independentes de idioma. As páginas <em>O que é uma GAT?</em> e <em>Base de dados</em> já têm tradução completa.</div><div class="page">
+<div class="page">
 
-<h1>Pseudotime — how the model's focus shifts from healthy skin to metastasis</h1>
-<p class="meta">Run: <code>run_multiseed_seed1</code></p>
+<h1>Pseudotempo — como o foco do modelo muda de pele saudável para metástase</h1>
+<p class="meta">Execução: <code>run_multiseed_seed1</code></p>
 
 <div class="plain">
-  <strong>In one sentence.</strong> We sort every sample on a "tumor-likeness"
-  axis and watch which genes the model relies on at each step. Genes whose
-  importance rises as samples become more tumor-like are candidate signals of
-  melanoma progression — as <em>seen by the model</em>.
+  <strong>Em uma frase.</strong> Ordenamos toda amostra ao longo de um eixo
+  de "grau de tumor" e observamos em quais genes o modelo se apoia em cada
+  passo. Genes cuja importância cresce conforme as amostras ficam mais
+  parecidas com tumor são candidatos a sinais de progressão de melanoma —
+  <em>como vistos pelo modelo</em>.
 </div>
 
-<h2>What is an "embedding"?</h2>
+<h2>O que é um "embedding"?</h2>
 <p>
-  Inside the trained network, each sample is summarized as a list of ~64
-  numbers — its <strong>embedding</strong>. Think of it as the model's
-  fingerprint of the sample: similar embeddings = samples the model thinks
-  look alike. We never look at this fingerprint directly during prediction;
-  the network just uses it to decide a class. But we <em>can</em> look at it,
-  and that's where this analysis starts.
+  Dentro da rede treinada, cada amostra é resumida em uma lista de ~64
+  números — seu <strong>embedding</strong>. Pense nele como a impressão
+  digital da amostra para o modelo: embeddings parecidos = amostras que o
+  modelo considera parecidas. Não olhamos para essa impressão digital
+  durante a predição; a rede só a usa para decidir uma classe. Mas
+  <em>podemos</em> olhá-la, e é daí que parte esta análise.
 </p>
 
-<h2>What is "pseudotime" here?</h2>
+<h2>O que é "pseudotempo" aqui?</h2>
 <p>
-  We computed two anchors in embedding space: the average embedding of the
-  Normal-skin samples (call it the "normal anchor") and the average
-  embedding of the Metastasis samples (the "metastasis anchor"). Then we
-  drew an imaginary line between the two and projected every sample onto
-  that line. Each sample gets a number between 0 and 1:
+  Calculamos duas âncoras no espaço de embeddings: o embedding médio das
+  amostras de pele Normal (a "âncora normal") e o embedding médio das
+  amostras de Metástase (a "âncora de metástase"). Em seguida, desenhamos
+  uma reta imaginária entre as duas e projetamos toda amostra sobre essa
+  reta. Cada amostra recebe um número entre 0 e 1:
 </p>
 <ul>
-  <li><strong>0</strong> = embedding sits at the normal-skin anchor</li>
-  <li><strong>1</strong> = embedding sits at the metastasis anchor</li>
-  <li>values in between = "somewhere along the way"</li>
+  <li><strong>0</strong> = embedding na âncora de pele normal</li>
+  <li><strong>1</strong> = embedding na âncora de metástase</li>
+  <li>valores intermediários = "em algum ponto do caminho"</li>
 </ul>
 <p>
-  We split this 0→1 axis into <strong>10 equal-width bins</strong>
-  (deciles), and for each bin we average the model's attention scores
-  across all samples that fell in that bin. The result is a picture of
-  <em>which genes the model focuses on at each step along the
-  Normal → Metastasis axis</em>.
+  Dividimos esse eixo 0→1 em <strong>10 bins de largura igual</strong>
+  (decis) e, para cada bin, calculamos a média dos escores de atenção do
+  modelo entre todas as amostras que caíram nele. O resultado é um retrato
+  de <em>quais genes o modelo foca em cada passo ao longo do eixo Normal
+  → Metástase</em>.
 </p>
 
 <div class="callout">
-  <strong>Honest caveat.</strong> TCGA samples are not a time course — there
-  is no patient followed across years. "Pseudotime" here is a <em>cohort
-  ordering</em> built from how the trained model sees the data. It describes
-  the model's view, not the biology of any single tumor evolving. Genes
-  whose attention rises along this axis are <em>hypotheses</em> for
-  progression markers, not confirmed ones.
+  <strong>Ressalva honesta.</strong> Amostras do TCGA não formam uma série
+  temporal — não há paciente acompanhado ao longo de anos. "Pseudotempo"
+  aqui é uma <em>ordenação da coorte</em> construída a partir de como o
+  modelo treinado vê os dados. Descreve a visão do modelo, não a biologia
+  de um tumor específico evoluindo. Genes cuja atenção sobe ao longo
+  deste eixo são <em>hipóteses</em> de marcadores de progressão, não
+  confirmações.
 </div>
 
-<h2>Composition of each pseudotime decile</h2>
+<h2>Composição de cada decil de pseudotempo</h2>
 <p>
-  Sanity check: the early bins should be mostly Normal samples, the late
-  bins should be mostly Metastasis. If they are, the axis is doing what we
-  expect. (Primary tumors typically sit in the middle.)
+  Checagem de sanidade: os bins iniciais devem ser principalmente amostras
+  Normais, os bins finais principalmente Metástase. Se forem, o eixo está
+  fazendo o esperado. (Tumores primários normalmente ficam no meio.)
 </p>
 <table>
-<tr><th>decile</th><th>Normal</th><th>Primary</th><th>Metastasis</th><th>total</th></tr>
+<tr><th>decil</th><th>Normal</th><th>Primário</th><th>Metástase</th><th>total</th></tr>
 <tr><td>1</td><td>9</td><td>0</td><td>0</td><td>9</td></tr><tr><td>2</td><td>9</td><td>0</td><td>0</td><td>9</td></tr><tr><td>3</td><td>2</td><td>4</td><td>2</td><td>8</td></tr><tr><td>4</td><td>0</td><td>4</td><td>28</td><td>32</td></tr><tr><td>5</td><td>0</td><td>12</td><td>89</td><td>101</td></tr><tr><td>6</td><td>0</td><td>10</td><td>76</td><td>86</td></tr><tr><td>7</td><td>0</td><td>4</td><td>88</td><td>92</td></tr><tr><td>8</td><td>0</td><td>0</td><td>47</td><td>47</td></tr><tr><td>9</td><td>0</td><td>1</td><td>14</td><td>15</td></tr><tr><td>10</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
 </table>
 
-<h2>Heatmap: gene attention across pseudotime</h2>
+<h2>Heatmap: atenção dos genes ao longo do pseudotempo</h2>
 <p>
-  Rows = genes whose attention varies most across the axis. Columns = the
-  10 pseudotime deciles, ordered Normal-like → Metastasis-like.
-  Each row is normalized by its own peak (so bright = "this gene's
-  attention peaks <em>here</em>"). Rows are reordered so genes that peak
-  early appear at the top, genes that peak late at the bottom.
+  Linhas = genes cuja atenção mais varia ao longo do eixo. Colunas = os 10
+  decis de pseudotempo, ordenados de Normal-like → Metástase-like.
+  Cada linha é normalizada pelo próprio pico (claro = "a atenção deste
+  gene atinge o pico <em>aqui</em>"). As linhas estão reordenadas de modo
+  que genes cujo pico ocorre cedo aparecem no topo, e os de pico tardio
+  embaixo.
 </p>
 <p>
-  Reading the figure: a row that's bright on the left and dark on the
-  right means "the model paid attention to this gene mostly when looking
-  at normal-like samples, and stopped caring as samples became more
-  tumor-like." The reverse pattern points the other way.
+  Como ler a figura: uma linha clara à esquerda e escura à direita
+  significa "o modelo prestou atenção neste gene principalmente em
+  amostras parecidas com normais, e deixou de se importar quando elas
+  ficaram mais parecidas com tumor". O padrão inverso aponta para o outro
+  lado.
 </p>
 <img src="pseudotime_heatmap.png"
-     alt="Per-decile mean attention heatmap">
+     alt="Heatmap de atenção média por decil">
 
-<h2>Selected gene trajectories</h2>
+<h2>Trajetórias de genes selecionados</h2>
 <p>
-  A few representative genes from each reference category, plotted as
-  attention vs. pseudotime decile. This is the same data as the heatmap
-  but easier to read for a small set of genes.
+  Alguns genes representativos de cada categoria de referência, plotados
+  como atenção vs. decil de pseudotempo. Mesma informação do heatmap, mas
+  mais fácil de ler para um conjunto pequeno de genes.
 </p>
 <div class="legend">
-  <span><span class="swatch" style="background:#d62728"></span>melanocyte lineage</span>
-  <span><span class="swatch" style="background:#ff7f0e"></span>melanoma progression</span>
-  <span><span class="swatch" style="background:#2ca02c"></span>immune infiltrate</span>
-  <span><span class="swatch" style="background:#1f77b4"></span>keratin / skin normal</span>
+  <span><span class="swatch" style="background:#d62728"></span>linhagem melanocítica</span>
+  <span><span class="swatch" style="background:#ff7f0e"></span>progressão de melanoma</span>
+  <span><span class="swatch" style="background:#2ca02c"></span>infiltrado imune</span>
+  <span><span class="swatch" style="background:#1f77b4"></span>queratina / pele normal</span>
 </div>
 <img src="pseudotime_lines.png"
-     alt="Selected gene trajectories">
+     alt="Trajetórias de genes selecionados">
 
-<h2>Why does this matter?</h2>
+<h2>Por que isso importa?</h2>
 <p>
-  This is the project's most ambitious figure: it ties together the
-  <em>embedding</em> (the model's internal summary) and the
-  <em>attention</em> (which genes the model uses) into one progression
-  story. If keratin and skin-normal genes dominate the early deciles and
-  fade in the late deciles, while melanocyte-lineage and melanoma-
-  progression genes do the opposite, the model has internalized a coherent
-  picture of how skin transitions toward melanoma — purely from
-  expression and PPI topology, with no progression labels in training.
+  Esta é a figura mais ambiciosa do projeto: ela amarra o
+  <em>embedding</em> (o resumo interno do modelo) e a <em>atenção</em>
+  (quais genes o modelo usa) em uma única narrativa de progressão. Se
+  genes de queratina e de pele-normal dominam os decis iniciais e
+  desaparecem nos finais, enquanto os de linhagem melanocítica e de
+  progressão de melanoma fazem o oposto, o modelo internalizou um quadro
+  coerente de como a pele transita para melanoma — puramente a partir de
+  expressão e topologia PPI, sem nenhum rótulo de progressão no
+  treinamento.
 </p>
 
 </div>

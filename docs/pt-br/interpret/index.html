@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Interpretability — Skin Cancer Gene-Network Analysis (PT)</title>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Interpretabilidade — Análise de Câncer de Pele em Redes Gênicas</title>
 <style>
 
 .site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
@@ -62,8 +62,9 @@
     <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
     <nav class="site-nav">
     <a href="../../pt-br/index.html">Predições</a>
+    <a href="../../pt-br/exploration.html">Exploração</a>
     <a href="../../pt-br/about-gat.html">O que é uma GAT?</a>
-    <a href="../../pt-br/overview.html">Visão da execução</a>
+    <a href="../../pt-br/overview.html">Treinamento</a>
     <a href="../../pt-br/dataset.html">Base de dados</a>
     <a href="../../pt-br/interpret/index.html" class="active">Interpretabilidade</a>
     <a href="../../pt-br/embeddings.html">Embeddings</a>
@@ -73,119 +74,123 @@
     </nav>
   </div>
 </header>
-<div style="background:#fffbf2;border-left:3px solid #e0a020;padding:0.7em 1em;margin:1em auto;max-width:1100px;font-family:-apple-system,system-ui,sans-serif;line-height:1.55;"><strong>Versão em português em construção.</strong> O texto narrativo desta página está atualmente em inglês — números, tabelas e legendas das figuras são independentes de idioma. As páginas <em>O que é uma GAT?</em> e <em>Base de dados</em> já têm tradução completa.</div><div class="page">
+<div class="page">
 
-<h1>GAT attention — top-30 PPI subgraphs by class</h1>
+<h1>Atenção da GAT — top-30 subgrafos PPI por classe</h1>
 
-<h2>What you're looking at</h2>
+<h2>O que você está vendo</h2>
 <p>
-  Each page below shows the protein–protein interaction (PPI) subgraph induced by
-  the <strong>top-30 most-attended genes</strong> for one class, as seen by the
-  trained Graph Attention Network on the held-out test split. Per-sample edge
-  attention from all three GAT layers is averaged across heads, summed onto
-  destination nodes, then averaged across <em>correctly classified</em> samples in
-  the class.
+  Cada página abaixo mostra o subgrafo de interações proteína–proteína (PPI)
+  induzido pelos <strong>30 genes mais atendidos</strong> de uma classe, do ponto
+  de vista da Graph Attention Network treinada, no split de teste reservado. A
+  atenção por aresta de cada amostra, em todas as três camadas GAT, é
+  promediada entre as cabeças, somada nos nós de destino e depois promediada
+  entre as amostras <em>classificadas corretamente</em> da classe.
 </p>
 
-<h2>What "attention score" means</h2>
+<h2>O que significa "escore de atenção"</h2>
 <p>
-  Inside each GAT layer, every directed edge <em>i → j</em> in the PPI graph
-  carries an <strong>attention coefficient</strong> α(i→j) — a number the model
-  learns that says <em>how much node j should listen to node i</em> when
-  updating its representation. For a fixed destination node j, the
-  α(i→j) values are softmax-normalized across j's incoming neighbors
-  (including a self-loop), so each individual α lies in <strong>[0, 1]</strong>
-  and the values incoming to j sum to 1 (per attention head, per layer).
+  Dentro de cada camada GAT, toda aresta direcionada <em>i → j</em> do grafo PPI
+  carrega um <strong>coeficiente de atenção</strong> α(i→j) — um número que o
+  modelo aprende e que indica <em>quanto o nó j deve ouvir o nó i</em> ao
+  atualizar sua representação. Para um nó de destino j fixo, os valores de
+  α(i→j) são normalizados via softmax entre os vizinhos que chegam em j
+  (incluindo um self-loop), de modo que cada α individual está em
+  <strong>[0, 1]</strong> e a soma dos α que chegam a j vale 1 (por cabeça de
+  atenção, por camada).
 </p>
 <p>
-  We turn this into a per-gene importance score in three steps:
+  Convertemos isso em um escore de importância por gene em três passos:
 </p>
 <ol>
-  <li><strong>Per sample, per layer:</strong> mean α across the 4 attention
-    heads, then sum the incoming α onto each gene (its destination).</li>
-  <li><strong>Across the 3 GAT layers:</strong> sum the per-layer values
-    (so a gene that is consistently attended deep in the network scores
-    higher than one only briefly attended in layer 1).</li>
-  <li><strong>Across samples:</strong> average over <em>correctly classified</em>
-    test-set samples within the class.</li>
+  <li><strong>Por amostra, por camada:</strong> média do α nas 4 cabeças de
+    atenção e, em seguida, soma dos α que chegam a cada gene (seu destino).</li>
+  <li><strong>Entre as 3 camadas GAT:</strong> soma dos valores por camada (de
+    modo que um gene atendido de forma consistente em camadas mais profundas
+    pontue mais que outro atendido brevemente apenas na camada 1).</li>
+  <li><strong>Entre amostras:</strong> média sobre as amostras de teste
+    <em>corretamente classificadas</em> dentro da classe.</li>
 </ol>
 <p>
-  The resulting score is unitless and approximately on a <strong>[0, ~3]</strong>
-  scale (3 layers × softmax-normalized incoming attention). Only relative
-  differences between genes matter — a gene with score 0.04 versus 0.01
-  attracted four times the attention, even though both are "small" numbers.
-  All scores reported here are these per-class averages.
+  O escore resultante é adimensional e fica aproximadamente em uma escala
+  <strong>[0, ~3]</strong> (3 camadas × atenção entrante normalizada por
+  softmax). Só importam diferenças relativas entre genes — um gene com escore
+  0,04 vs 0,01 atraiu quatro vezes mais atenção, mesmo que os números pareçam
+  "pequenos". Todos os escores reportados aqui são essas médias por classe.
 </p>
 
-<h2>How to read the visualization</h2>
+<h2>Como ler a visualização</h2>
 <ul>
-  <li><strong>Node size</strong> = per-class mean attention importance
-    (bigger = the model relied on this gene more when classifying samples in
-    this class).</li>
-  <li><strong>Node color</strong> = <em>Tumor − Normal</em> differential attention
-    (red = preferentially attended in tumor samples, blue = preferentially in
-    normal skin, white ≈ neutral).</li>
-  <li><strong>Edges</strong> = STRING physical PPIs (confidence ≥ 200) between
-    these genes. Layout is force-directed (Barnes-Hut); you can drag nodes.</li>
-  <li><strong>Hover</strong> a node for: gene symbol, attention score,
-    Tumor − Normal score, and gene-set membership.</li>
+  <li><strong>Tamanho do nó</strong> = importância média da atenção na classe
+    (maior = o modelo dependeu mais desse gene ao classificar amostras desta
+    classe).</li>
+  <li><strong>Cor do nó</strong> = atenção diferencial <em>Tumor − Normal</em>
+    (vermelho = atendido preferencialmente em tumor, azul = preferencialmente
+    em pele normal, branco ≈ neutro).</li>
+  <li><strong>Arestas</strong> = PPIs físicas do STRING (confiança ≥ 200) entre
+    esses genes. O layout é force-directed (Barnes-Hut); pode-se arrastar
+    nós.</li>
+  <li><strong>Passe o mouse</strong> sobre um nó para: símbolo do gene, escore
+    de atenção, escore Tumor − Normal e categoria do gene-set.</li>
 </ul>
 
 <div class="legend">
-  <span><span class="swatch" style="background:#d62728"></span>melanocyte lineage</span>
-  <span><span class="swatch" style="background:#ff7f0e"></span>melanoma progression</span>
-  <span><span class="swatch" style="background:#2ca02c"></span>immune infiltrate</span>
-  <span><span class="swatch" style="background:#1f77b4"></span>keratin / skin normal</span>
-  <span class="hint">(reference gene-set categories — used in the bar charts and heatmap)</span>
+  <span><span class="swatch" style="background:#d62728"></span>linhagem melanocítica</span>
+  <span><span class="swatch" style="background:#ff7f0e"></span>progressão de melanoma</span>
+  <span><span class="swatch" style="background:#2ca02c"></span>infiltrado imune</span>
+  <span><span class="swatch" style="background:#1f77b4"></span>queratina / pele normal</span>
+  <span class="hint">(categorias de gene-set de referência — usadas nos bar charts e no heatmap)</span>
 </div>
 
-<h2>Why this matters</h2>
+<h2>Por que isso importa</h2>
 <p>
-  A GAT trained only on gene expression and PPI topology can be inspected for
-  <em>which genes</em> drove each prediction. If the top-attended genes recover
-  known melanoma biology (melanocyte lineage markers, immune infiltrate signature,
-  cornified-envelope genes for normal skin), the model is learning interpretable
-  signal rather than spurious patterns. The <em>contrast</em> rankings
-  (Metastasis − Primary, Tumor − Normal) are the most informative — they isolate
-  what attention does <strong>differently</strong> across classes, beyond the
-  static PPI hub structure.
+  Uma GAT treinada apenas com expressão gênica e topologia PPI pode ser
+  inspecionada para revelar <em>quais genes</em> orientaram cada predição. Se
+  os genes mais atendidos recuperam biologia conhecida do melanoma (marcadores
+  de linhagem melanocítica, assinatura de infiltrado imune, genes do envelope
+  cornificado para pele normal), o modelo está aprendendo um sinal
+  interpretável, não padrões espúrios. Os rankings <em>de contraste</em>
+  (Metástase − Primário, Tumor − Normal) são os mais informativos — eles
+  isolam o que a atenção faz de <strong>diferente</strong> entre classes,
+  além da estrutura estática de hubs do PPI.
 </p>
 
 <div class="callout">
-  <strong>Sanity check.</strong> A node-degree baseline ranking is included in the
-  companion bar charts and heatmap. Where attention beats degree
-  (e.g. <em>Metastasis − Primary</em> recovering keratin/skin genes at p ≈ 2×10⁻⁵
-  vs. p ≈ 5×10⁻³ for degree alone), the GAT is genuinely learning class-specific
-  importance — not just attending to PPI hubs.
+  <strong>Checagem de sanidade.</strong> Um ranking baseado no grau dos nós é
+  incluído nos bar charts e no heatmap auxiliares. Onde a atenção supera o
+  grau (por exemplo, <em>Metástase − Primário</em> recuperando genes de
+  queratina/pele em p ≈ 2×10⁻⁵ vs. p ≈ 5×10⁻³ apenas pelo grau), a GAT está
+  realmente aprendendo importância específica de classe — e não apenas
+  atendendo a hubs de PPI.
 </div>
 
 <div class="callout" style="background:#fffbf2;border-left-color:#e0a020;">
-  <strong>Why some nodes look disconnected.</strong> Each subgraph is the
-  <em>induced</em> subgraph over the top-30 attended genes. An isolated node
-  means the gene was attended to, but its STRING PPI partners were not
-  themselves in the top-30 for that class — its edges still exist in the full
-  graph, just not within this filtered view.
+  <strong>Por que alguns nós parecem desconectados.</strong> Cada subgrafo é o
+  subgrafo <em>induzido</em> pelos 30 genes mais atendidos. Um nó isolado
+  significa que o gene foi atendido, mas seus parceiros PPI no STRING não
+  estão entre os 30 mais atendidos daquela classe — as arestas continuam
+  existindo no grafo completo, só não dentro desta visão filtrada.
 </div>
 
-<h2>Class views</h2>
+<h2>Visões por classe</h2>
 <ul>
   <li>
-    <a href="subgraph_Primary_Tumor.html"><strong>Primary Tumor</strong></a>
-    <span class="hint">— top-30 attended genes induced subgraph</span>
+    <a href="subgraph_Primary_Tumor.html"><strong>Tumor Primário</strong></a>
+    <span class="hint">— subgrafo induzido pelos top-30 genes atendidos</span>
   </li>
   <li>
-    <a href="subgraph_Metastasis.html"><strong>Metastasis</strong></a>
-    <span class="hint">— top-30 attended genes induced subgraph</span>
+    <a href="subgraph_Metastasis.html"><strong>Metástase</strong></a>
+    <span class="hint">— subgrafo induzido pelos top-30 genes atendidos</span>
   </li>
   <li>
-    <a href="subgraph_Benign_Nevus.html"><strong>Benign Nevus</strong></a>
-    <span class="hint">— top-30 attended genes induced subgraph</span>
+    <a href="subgraph_Benign_Nevus.html"><strong>Nevo Benigno</strong></a>
+    <span class="hint">— subgrafo induzido pelos top-30 genes atendidos</span>
   </li>
 </ul>
 
-<p class="hint">Companion static figures (top-20 bar charts per ranking,
-gene-set enrichment heatmap, matplotlib subgraphs) are saved alongside the model
-in <code>data/processed/run_multiseed_seed1/figures/</code>.</p>
+<p class="hint">Figuras estáticas auxiliares (bar charts top-20 por ranking,
+heatmap de enriquecimento de gene-sets, subgrafos em matplotlib) são salvas
+junto ao modelo em <code>data/processed/run_multiseed_seed1/figures/</code>.</p>
 
 </div>
 </body></html>

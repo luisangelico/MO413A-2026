@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Predictions — {'en': 'Skin Cancer Gene-Network Analysis', 'pt-br': 'Análise de Câncer de Pele em Redes Gênicas'} (PT)</title><style>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Predições — Análise de Câncer de Pele em Redes Gênicas</title><style>
 .site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
                color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
                border-bottom: 3px solid #1f77b4;
@@ -66,8 +66,9 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
     <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
     <nav class="site-nav">
     <a href="../pt-br/index.html" class="active">Predições</a>
+    <a href="../pt-br/exploration.html">Exploração</a>
     <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
-    <a href="../pt-br/overview.html">Visão da execução</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
     <a href="../pt-br/dataset.html">Base de dados</a>
     <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
     <a href="../pt-br/embeddings.html">Embeddings</a>
@@ -77,36 +78,36 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
     </nav>
   </div>
 </header>
-<div style="background:#fffbf2;border-left:3px solid #e0a020;padding:0.7em 1em;margin:1em auto;max-width:1100px;font-family:-apple-system,system-ui,sans-serif;line-height:1.55;"><strong>Versão em português em construção.</strong> O texto narrativo desta página está atualmente em inglês — números, tabelas e legendas das figuras são independentes de idioma. As páginas <em>O que é uma GAT?</em> e <em>Base de dados</em> já têm tradução completa.</div><div class="page">
+<div class="page">
 <div class="page-header">
-  <h2>Model predictions</h2>
-  <div class="meta">Click any row to inspect the per-sample graph and nearest training neighbors.</div>
+  <h2>Predições do modelo</h2>
+  <div class="meta">Clique em qualquer linha para inspecionar o grafo da amostra e os vizinhos de treino mais próximos.</div>
 </div>
 <div class="metric-row">
-  <div class="metric"><div class="label">Samples</div><div class="value">492</div></div>
-  <div class="metric"><div class="label">Accuracy</div><div class="value">81.30%</div></div>
+  <div class="metric"><div class="label">Amostras</div><div class="value">492</div></div>
+  <div class="metric"><div class="label">Acurácia</div><div class="value">81,30%</div></div>
 </div>
 <div>
-  <input class="search" id="q" placeholder="search id…">
-  <select id="cls"><option value="">all classes</option><option>Primary Tumor</option><option>Metastasis</option><option>Benign Nevus</option></select>
-  <select id="ok"><option value="">all</option><option value="true">correct only</option><option value="false">incorrect only</option></select>
+  <input class="search" id="q" placeholder="buscar id…">
+  <select id="cls"><option value="">todas as classes</option><option value="Primary Tumor">Tumor Primário</option><option value="Metastasis">Metástase</option><option value="Benign Nevus">Nevo Benigno</option></select>
+  <select id="ok"><option value="">todos</option><option value="true">apenas corretos</option><option value="false">apenas incorretos</option></select>
   <select id="split">
-    <option value="all">all splits</option>
-    <option value="train" selected>train only</option>
-    <option value="test">test only</option>
-    <option value="validation">validation only</option>
+    <option value="all">todas as divisões</option>
+    <option value="train" selected>apenas treino</option>
+    <option value="test">apenas teste</option>
+    <option value="validation">apenas validação</option>
   </select>
 </div>
 <table id="t">
   <thead>
     <tr>
       <th data-k="idx">idx</th>
-      <th data-k="id">patient id</th>
-      <th data-k="true">true</th>
-      <th data-k="pred">predicted</th>
-      <th data-k="split">split</th>
-      <th data-k="conf">confidence</th>
-      <th data-k="ok">correct?</th>
+      <th data-k="id">id paciente</th>
+      <th data-k="true">verdadeira</th>
+      <th data-k="pred">predita</th>
+      <th data-k="split">divisão</th>
+      <th data-k="conf">confiança</th>
+      <th data-k="ok">correto?</th>
     </tr>
   </thead>
   <tbody></tbody>
@@ -137,14 +138,16 @@ function render() {
     if (av > bv) return sortAsc ? 1 : -1;
     return 0;
   });
+  const CLS_PT = {"Primary Tumor": "Tumor Primário", "Metastasis": "Metástase", "Benign Nevus": "Nevo Benigno"};
+  const SPLIT_PT = {"train": "treino", "test": "teste", "val": "validação", "validation": "validação"};
   body.innerHTML = rows.map(r => `
     <tr onclick="location='../samples/sample_${r.idx}.html'" style="cursor:pointer">
       <td>${r.idx}</td>
       <td>${r.id}</td>
-      <td>${r.true}</td>
-      <td>${r.pred}</td>
-      <td>${r.split === "val" ? "validation" : r.split}</td>
-      <td>${(r.conf*100).toFixed(1)}%</td>
+      <td>${CLS_PT[r.true] || r.true}</td>
+      <td>${CLS_PT[r.pred] || r.pred}</td>
+      <td>${SPLIT_PT[r.split] || r.split}</td>
+      <td>${(r.conf*100).toFixed(1).replace('.', ',')}%</td>
       <td>${r.ok ? '<span style="color:#2ca02c">✓</span>' : '<span style="color:#d62728">✗</span>'}</td>
     </tr>`).join("");
 }

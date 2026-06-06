@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Exploração — Análise de Câncer de Pele em Redes Gênicas</title>
+<style>
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
+}
+
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+       margin: 0; color: #222; }
+.page { max-width: 1100px; margin: 0 auto; padding: 0 1.5em 2em; }
+.page-header { border-bottom: 1px solid #eee; padding-bottom: 0.6em;
+               margin-bottom: 1em; }
+.page-header h2 { margin: 0.2em 0 0.3em; font-size: 1.3em; }
+.page-header .meta { color: #666; font-size: 0.9em; }
+.page-header a { text-decoration: none; color: #06c; }
+.metric-row { display: flex; gap: 1em; margin: 1em 0; flex-wrap: wrap; }
+.metric { background: #f5f5f7; border-radius: 8px; padding: 0.6em 1em; min-width: 130px; }
+.metric .label { font-size: 0.8em; color: #666; }
+.metric .value { font-size: 1.2em; font-weight: 600; }
+.correct { color: #2ca02c; }
+.incorrect { color: #d62728; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.9em; }
+th, td { padding: 0.4em 0.7em; border-bottom: 1px solid #eee; text-align: left; }
+th { background: #f5f5f7; cursor: pointer; user-select: none; }
+tr:hover { background: #fafafa; }
+input.search { padding: 0.5em; width: 240px; font-size: 1em; margin-right: 0.5em; }
+select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em; }
+@media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
+.pill { display: inline-block; padding: 0.1em 0.6em; border-radius: 999px;
+        font-size: 0.8em; color: white; }
+</style>
+
+<style>
+.explore-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 1.5em;
+    margin-top: 1em;
+}
+@media (max-width: 1000px) {
+    .explore-container {
+        grid-template-columns: 1fr;
+    }
+}
+.sidebar {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.2em;
+    height: fit-content;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.sidebar h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5em;
+    color: #1e293b;
+}
+.control-group {
+    margin-bottom: 1em;
+}
+.control-group label {
+    display: block;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.3em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.sidebar input.search, .sidebar select, .sidebar input[type="range"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5em;
+    font-size: 0.9em;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: white;
+}
+.sidebar input[type="range"] {
+    padding: 0;
+}
+.sample-list-container {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    height: 250px;
+    overflow-y: auto;
+    background: white;
+    margin-top: 0.5em;
+}
+.sample-item {
+    display: flex;
+    align-items: center;
+    padding: 0.4em 0.6em;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.sample-item:hover {
+    background: #f1f5f9;
+}
+.sample-item input {
+    margin-right: 0.6em;
+    cursor: pointer;
+}
+.sample-item .meta {
+    margin-left: auto;
+    font-size: 0.8em;
+    color: #64748b;
+}
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4em;
+    margin-bottom: 1em;
+}
+.btn {
+    padding: 0.45em 0.8em;
+    font-size: 0.8em;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+.btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+.btn.primary {
+    background: #1f77b4;
+    color: white;
+    border-color: #1f77b4;
+}
+.btn.primary:hover {
+    background: #155a8a;
+    border-color: #155a8a;
+}
+.alg-selector {
+    display: flex;
+    gap: 0.2em;
+    background: #e2e8f0;
+    padding: 0.25em;
+    border-radius: 6px;
+    margin-bottom: 1em;
+}
+.alg-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.45em 0.2em;
+    font-size: 0.82em;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: #475569;
+    transition: all 0.12s;
+}
+.alg-btn.active {
+    background: white;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.selected-pane {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.2em;
+    margin-top: 1.2em;
+}
+.graph-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1em;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 1.5em;
+}
+.sub-select-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5em;
+    margin-bottom: 1em;
+    background: #f1f5f9;
+    padding: 0.6em;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+.sub-select-group label {
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 0.2em;
+    display: block;
+}
+.badge {
+    display: inline-block;
+    padding: 0.15em 0.5em;
+    border-radius: 999px;
+    font-size: 0.75em;
+    color: white;
+    font-weight: 500;
+}
+</style>
+<script charset="utf-8" src="https://cdn.plot.ly/plotly-3.5.0.min.js" integrity="sha256-fHbNLP+GlIXN+efbQec78UkemUz3NJp7UmfGxC1tNxs=" crossorigin="anonymous"></script>
+<script src="exploration_data.js"></script>
+</head><body>
+<header class="site-header">
+  <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="../pt-br/exploration.html" title="PT">PT</a><a href="../exploration.html" title="Switch to EN">EN</a></div>
+    <h1 class="site-title">Análise de Câncer de Pele em Redes Gênicas</h1>
+    <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
+    <nav class="site-nav">
+    <a href="../pt-br/index.html">Predições</a>
+    <a href="../pt-br/exploration.html" class="active">Exploração</a>
+    <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
+    <a href="../pt-br/dataset.html">Base de dados</a>
+    <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
+    <a href="../pt-br/embeddings.html">Embeddings</a>
+    <a href="../pt-br/pseudotime.html">Pseudotempo</a>
+    <a href="../pt-br/stability.html">Estabilidade</a>
+    <a href="../pt-br/biomarkers.html">Biomarcadores</a>
+    </nav>
+  </div>
+</header>
+<div class="page">
+<div class="page-header">
+  <h2>Painel de exploração de amostras</h2>
+  <div class="meta">Filtre e selecione amostras para comparar visualmente seus mapeamentos da Graph Attention Network.</div>
+</div>
+
+<div class="explore-container">
+  <div class="sidebar">
+    <h3>🔍 Filtros</h3>
+    <div class="control-group">
+      <label>Buscar ID do paciente</label>
+      <input type="text" class="search" id="q" placeholder="buscar id…">
+    </div>
+    <div class="control-group">
+      <label>Classe verdadeira</label>
+      <select id="cls">
+        <option value="">todas as classes</option>
+        <option value="Primary Tumor">Tumor Primário</option><option value="Metastasis">Metástase</option><option value="Benign Nevus">Nevo Benigno</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Divisão</label>
+      <select id="split">
+        <option value="all">todas as divisões</option>
+        <option value="train">apenas treino</option>
+        <option value="test">apenas teste</option>
+        <option value="val">apenas validação</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Status</label>
+      <select id="ok">
+        <option value="">todos</option>
+        <option value="true">apenas corretos</option>
+        <option value="false">apenas incorretos</option>
+      </select>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5em; margin-bottom: 0.3em;">
+      <h3 style="margin: 0; border: none; padding: 0; font-size: 1.1em;">👤 Amostras</h3>
+      <span id="match-count" style="font-size: 0.8em; color: #64748b; font-weight: 500;">0 encontradas</span>
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="selectAll(true)">Selecionar tudo</button>
+      <button class="btn" onclick="selectAll(false)">Limpar</button>
+    </div>
+    <div class="sample-list-container">
+      <div id="sample-list"></div>
+    </div>
+
+    <div style="margin-top: 1.5em;">
+      <h3>⚙️ Comparação</h3>
+      <div class="control-group">
+        <label>Algoritmo de agregação</label>
+        <div class="alg-selector">
+          <button class="alg-btn active" id="alg-mean" onclick="setAlgorithm('mean')">Média</button>
+          <button class="alg-btn" id="alg-addition" onclick="setAlgorithm('addition')">Soma</button>
+          <button class="alg-btn" id="alg-subtraction" onclick="setAlgorithm('subtraction')">Subtração</button>
+        </div>
+      </div>
+
+      <div class="sub-select-group" id="subtraction-controls" style="display: none;">
+        <div>
+          <label>Amostra A (minuendo)</label>
+          <select id="sample-a" onchange="renderGraph()"></select>
+        </div>
+        <div>
+          <label>Amostra B (subtraendo)</label>
+          <select id="sample-b" onchange="renderGraph()"></select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Limiar do filtro de arestas (<span id="threshold-val">0.02</span>)</label>
+        <input type="range" id="threshold" min="0.0" max="0.3" step="0.005" value="0.02" oninput="document.getElementById('threshold-val').innerText=this.value; renderGraph();">
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="graph-card">
+      <h3 style="margin-top: 0; font-size: 1.2em; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5em;" id="graph-title">Comparação do grafo de atenção</h3>
+      <div id="plotly-graph" style="height: 600px; width: 100%;"></div>
+    </div>
+
+    <div class="selected-pane" id="selected-info-pane" style="display: none;">
+      <h3 style="margin-top: 0; font-size: 1.1em; color: #1e293b;">Informações das amostras selecionadas</h3>
+      <table id="selected-table">
+        <thead>
+          <tr>
+            <th>idx</th>
+            <th>id paciente</th>
+            <th>classe verdadeira</th>
+            <th>predita</th>
+            <th>divisão</th>
+            <th>confiança</th>
+            <th>correto?</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="graph-card" style="margin-top: 1.5em;">
+      <h3 style="margin-top: 0; font-size: 1.1em; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5em;" id="table-title">Principais interações por aresta</h3>
+      <table id="interactions-table">
+        <thead>
+          <tr>
+            <th>gene a</th>
+            <th>gene b</th>
+            <th id="col-val-a">Atenção A</th>
+            <th id="col-val-b" style="display: none;">Atenção B</th>
+            <th id="col-val-compare">Valor agregado</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedSampleIds = new Set([0, 1]); // Default selection
+let currentAlgorithm = "mean";
+
+const sampleListEl = document.getElementById("sample-list");
+const qEl = document.getElementById("q");
+const clsEl = document.getElementById("cls");
+const splitEl = document.getElementById("split");
+const okEl = document.getElementById("ok");
+const subControlsEl = document.getElementById("subtraction-controls");
+const sampleAEl = document.getElementById("sample-a");
+const sampleBEl = document.getElementById("sample-b");
+
+function init() {
+  // Filter listeners
+  [qEl, clsEl, splitEl, okEl].forEach(el => el.addEventListener("input", filterSamples));
+  
+  // Initialize sample list
+  filterSamples();
+  
+  // Initial render
+  updateSelectedPane();
+  renderGraph();
+}
+
+function filterSamples() {
+  const qv = qEl.value.toLowerCase();
+  const clsv = clsEl.value;
+  const splitv = splitEl.value;
+  const okv = okEl.value;
+  
+  const matches = EXPLORATION_DATA.samples.filter(s => 
+    (!qv || s.id.toLowerCase().includes(qv)) &&
+    (!clsv || s.true === clsv) &&
+    (!okv || String(s.ok) === okv) &&
+    (splitv === "all" || s.split === splitv)
+  );
+  
+  document.getElementById("match-count").innerText = `${matches.length} encontradas`;
+  
+  sampleListEl.innerHTML = matches.map(s => {
+    const checked = selectedSampleIds.has(s.idx) ? "checked" : "";
+    const color = s.true === "Primary Tumor" ? "#d62728" : (s.true === "Metastasis" ? "#ff7f0e" : "#2ca02c");
+    return `
+      <div class="sample-item" onclick="toggleSampleCheckbox(${s.idx})">
+        <input type="checkbox" id="chk-${s.idx}" ${checked} onclick="event.stopPropagation(); toggleSample(${s.idx})">
+        <strong>${s.idx}</strong> - ${s.id}
+        <span class="meta"><span class="badge" style="background:${color}">${s.true.substring(0, 7)}</span></span>
+      </div>
+    `;
+  }).join("");
+}
+
+function toggleSampleCheckbox(idx) {
+  const chk = document.getElementById(`chk-${idx}`);
+  if (chk) {
+    chk.checked = !chk.checked;
+    toggleSample(idx);
+  }
+}
+
+function toggleSample(idx) {
+  if (selectedSampleIds.has(idx)) {
+    selectedSampleIds.delete(idx);
+  } else {
+    selectedSampleIds.add(idx);
+  }
+  updateSelectedPane();
+  renderGraph();
+}
+
+function selectAll(checked) {
+  const qv = qEl.value.toLowerCase();
+  const clsv = clsEl.value;
+  const splitv = splitEl.value;
+  const okv = okEl.value;
+  
+  EXPLORATION_DATA.samples.forEach(s => {
+    const match = (!qv || s.id.toLowerCase().includes(qv)) &&
+                  (!clsv || s.true === clsv) &&
+                  (!okv || String(s.ok) === okv) &&
+                  (splitv === "all" || s.split === splitv);
+    if (match) {
+      if (checked) selectedSampleIds.add(s.idx);
+      else selectedSampleIds.delete(s.idx);
+    }
+  });
+  
+  filterSamples();
+  updateSelectedPane();
+  renderGraph();
+}
+
+function setAlgorithm(alg) {
+  currentAlgorithm = alg;
+  document.querySelectorAll(".alg-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(`alg-${alg}`).classList.add("active");
+  
+  if (alg === "subtraction") {
+    subControlsEl.style.display = "grid";
+  } else {
+    subControlsEl.style.display = "none";
+  }
+  
+  updateSelectedPane();
+  renderGraph();
+}
+
+function updateSelectedPane() {
+  const activeIds = Array.from(selectedSampleIds);
+  const pane = document.getElementById("selected-info-pane");
+  
+  // Update subtraction dropdowns
+  const prevA = sampleAEl.value;
+  const prevB = sampleBEl.value;
+  
+  const optionsHtml = activeIds.map(idx => {
+    const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+    return `<option value="${idx}">idx ${idx} - ${s.id.substring(0, 12)}...</option>`;
+  }).join("");
+  
+  sampleAEl.innerHTML = optionsHtml;
+  sampleBEl.innerHTML = optionsHtml;
+  
+  if (activeIds.includes(Number(prevA))) sampleAEl.value = prevA;
+  else if (activeIds.length > 0) sampleAEl.value = activeIds[0];
+  
+  if (activeIds.includes(Number(prevB))) sampleBEl.value = prevB;
+  else if (activeIds.length > 1) sampleBEl.value = activeIds[1];
+  else if (activeIds.length > 0) sampleBEl.value = activeIds[0];
+
+  if (activeIds.length === 0) {
+    pane.style.display = "none";
+    return;
+  }
+  
+  pane.style.display = "block";
+  const CLS_PT = {"Primary Tumor": "Tumor Primário", "Metastasis": "Metástase", "Benign Nevus": "Nevo Benigno"};
+  const SPLIT_PT = {"train": "treino", "test": "teste", "val": "validação"};
+  const tbody = document.querySelector("#selected-table tbody");
+  tbody.innerHTML = activeIds.map(idx => {
+    const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+    const color = s.true === "Primary Tumor" ? "#d62728" : (s.true === "Metastasis" ? "#ff7f0e" : "#2ca02c");
+    const predColor = s.pred === "Primary Tumor" ? "#d62728" : (s.pred === "Metastasis" ? "#ff7f0e" : "#2ca02c");
+    return `
+      <tr>
+        <td>${s.idx}</td>
+        <td>${s.id}</td>
+        <td><span class="badge" style="background:${color}">${CLS_PT[s.true] || s.true}</span></td>
+        <td><span class="badge" style="background:${predColor}">${CLS_PT[s.pred] || s.pred}</span></td>
+        <td>${SPLIT_PT[s.split] || s.split}</td>
+        <td>${(s.conf * 100).toFixed(1).replace('.', ',')}%</td>
+        <td>${s.ok ? '<span style="color:#2ca02c">✓</span>' : '<span style="color:#d62728">✗</span>'}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderGraph() {
+  const activeIds = Array.from(selectedSampleIds);
+  const numActive = activeIds.length;
+  const graphTitleEl = document.getElementById("graph-title");
+  const tableTitleEl = document.getElementById("table-title");
+  
+  if (numActive === 0) {
+    Plotly.newPlot("plotly-graph", [], {
+      annotations: [{ text: "Selecione uma ou mais amostras na barra lateral para visualizar o mapa de atenção da rede", showarrow: false, font: { size: 16 } }],
+      xaxis: { visible: false }, yaxis: { visible: false }
+    });
+    document.querySelector("#interactions-table tbody").innerHTML = "<tr><td colspan='5' style='text-align: center; color: #64748b;'>Nenhuma amostra selecionada</td></tr>";
+    return;
+  }
+
+  let edgeAttns = new Array(EXPLORATION_DATA.edges.length).fill(0);
+  let nodeExprs = new Array(EXPLORATION_DATA.genes.length).fill(0);
+  
+  // Calculate average gene expressions for selected nodes
+  for (let i = 0; i < EXPLORATION_DATA.genes.length; i++) {
+    let sum = 0;
+    for (let idx of activeIds) {
+      const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+      if (s) sum += s.expr[i];
+    }
+    nodeExprs[i] = sum / numActive;
+  }
+
+  let subtitle = "";
+  let sample1Id = null, sample2Id = null;
+  
+  if (currentAlgorithm === "mean") {
+    subtitle = `Atenção média de ${numActive} amostra(s)`;
+    for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
+      let sum = 0;
+      for (let idx of activeIds) {
+        const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+        if (s) sum += s.attn[i];
+      }
+      edgeAttns[i] = sum / numActive;
+    }
+  } else if (currentAlgorithm === "addition") {
+    subtitle = `Atenção somada de ${numActive} amostra(s)`;
+    for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
+      let sum = 0;
+      for (let idx of activeIds) {
+        const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+        if (s) sum += s.attn[i];
+      }
+      edgeAttns[i] = sum;
+    }
+  } else if (currentAlgorithm === "subtraction") {
+    sample1Id = Number(sampleAEl.value);
+    sample2Id = Number(sampleBEl.value);
+    if (isNaN(sample1Id) || isNaN(sample2Id)) {
+      Plotly.newPlot("plotly-graph", [], {
+        annotations: [{ text: "Selecione duas amostras para fazer a subtração", showarrow: false, font: { size: 16 } }],
+        xaxis: { visible: false }, yaxis: { visible: false }
+      });
+      return;
+    }
+    const sA = EXPLORATION_DATA.samples.find(s => s.idx === sample1Id);
+    const sB = EXPLORATION_DATA.samples.find(s => s.idx === sample2Id);
+    subtitle = `Subtração: Amostra ${sample1Id} (${sA.id.substring(0, 10)}) − Amostra ${sample2Id} (${sB.id.substring(0, 10)})`;
+    for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
+      if (sA && sB) {
+        edgeAttns[i] = sA.attn[i] - sB.attn[i];
+      }
+    }
+  }
+  
+  graphTitleEl.innerText = `Mapas de atenção da rede (${subtitle})`;
+  tableTitleEl.innerText = `Principais interações por aresta (${subtitle})`;
+
+  // Draw edges
+  const threshold = parseFloat(document.getElementById("threshold").value) || 0.0;
+  let maxAbsAttn = 0.0001;
+  for (let i = 0; i < edgeAttns.length; i++) {
+    const absVal = Math.abs(edgeAttns[i]);
+    if (absVal > maxAbsAttn) maxAbsAttn = absVal;
+  }
+
+  const edgeTraces = [];
+  const topEdgesList = [];
+  
+  for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
+    const edge = EXPLORATION_DATA.edges[i];
+    const sNode = edge[0];
+    const dNode = edge[1];
+    const val = edgeAttns[i];
+    const absVal = Math.abs(val);
+    
+    topEdgesList.push({
+      sName: EXPLORATION_DATA.genes[sNode],
+      dName: EXPLORATION_DATA.genes[dNode],
+      sAttn: sample1Id !== null ? EXPLORATION_DATA.samples.find(sm => sm.idx === sample1Id).attn[i] : null,
+      dAttn: sample2Id !== null ? EXPLORATION_DATA.samples.find(sm => sm.idx === sample2Id).attn[i] : null,
+      val: val,
+      absVal: absVal
+    });
+    
+    if (absVal < threshold) continue;
+    
+    const x0 = EXPLORATION_DATA.positions[sNode][0];
+    const y0 = EXPLORATION_DATA.positions[sNode][1];
+    const x1 = EXPLORATION_DATA.positions[dNode][0];
+    const y1 = EXPLORATION_DATA.positions[dNode][1];
+    
+    let color, width;
+    const norm = absVal / maxAbsAttn;
+    
+    if (currentAlgorithm === "subtraction") {
+      // Diverging colors: Red for positive (Sample A higher), Blue for negative (Sample B higher)
+      if (val > 0) {
+        color = `rgba(${Math.round(214 + 41*norm)}, ${Math.round(39 - 39*norm)}, ${Math.round(40 - 40*norm)}, ${0.3 + 0.7*norm})`;
+      } else {
+        color = `rgba(${Math.round(31 - 31*norm)}, ${Math.round(119 - 119*norm)}, ${Math.round(180 + 75*norm)}, ${0.3 + 0.7*norm})`;
+      }
+      width = 0.5 + 6.0 * norm;
+    } else {
+      // Sequential: Orange-Red
+      color = `rgba(230, ${Math.round(100 - 100*norm)}, 0, ${0.3 + 0.7*norm})`;
+      width = 0.5 + 6.0 * norm;
+    }
+    
+    edgeTraces.push({
+      x: [x0, x1],
+      y: [y0, y1],
+      mode: 'lines',
+      line: { width: width, color: color },
+      hoverinfo: 'text',
+      hovertext: `${EXPLORATION_DATA.genes[sNode]} ↔ ${EXPLORATION_DATA.genes[dNode]}<br>Atenção: ${val.toFixed(4)}`,
+      showlegend: false
+    });
+  }
+
+  // Draw nodes
+  const nodes = Object.keys(EXPLORATION_DATA.positions).map(Number);
+  const nodeX = [], nodeY = [], nodeText = [], nodeColors = [];
+  
+  for (let n of nodes) {
+    const pos = EXPLORATION_DATA.positions[n];
+    nodeX.push(pos[0]);
+    nodeY.push(pos[1]);
+    nodeText.push(`${EXPLORATION_DATA.genes[n]}<br>Expressão média: ${nodeExprs[n].toFixed(3)}`);
+    nodeColors.push(nodeExprs[n]);
+  }
+  
+  const nodeTrace = {
+    x: nodeX,
+    y: nodeY,
+    mode: 'markers',
+    marker: {
+      size: 9,
+      color: nodeColors,
+      colorscale: 'Viridis',
+      showscale: true,
+      colorbar: { title: 'Expressão', thickness: 15, len: 0.6 },
+      line: { width: 0.6, color: 'black' }
+    },
+    hovertext: nodeText,
+    hoverinfo: 'text',
+    showlegend: false
+  };
+  
+  const layout = {
+    height: 600,
+    margin: { l: 10, r: 10, t: 10, b: 10 },
+    plot_bgcolor: "white",
+    xaxis: { showticklabels: false, showgrid: false, zeroline: false },
+    yaxis: { showticklabels: false, showgrid: false, zeroline: false },
+    hovermode: 'closest'
+  };
+  
+  Plotly.newPlot("plotly-graph", [...edgeTraces, nodeTrace], layout, { responsive: true });
+  
+  // Render Top Interactions Table
+  topEdgesList.sort((a, b) => b.absVal - a.absVal);
+  const top15 = topEdgesList.slice(0, 15);
+  
+  const colValAEl = document.getElementById("col-val-a");
+  const colValBEl = document.getElementById("col-val-b");
+  const colValCompareEl = document.getElementById("col-val-compare");
+  
+  if (currentAlgorithm === "subtraction") {
+    colValAEl.style.display = "table-cell";
+    colValBEl.style.display = "table-cell";
+    colValAEl.innerText = `Atenção (Amostra ${sample1Id})`;
+    colValBEl.innerText = `Atenção (Amostra ${sample2Id})`;
+    colValCompareEl.innerText = "Diferença";
+  } else {
+    colValAEl.style.display = "none";
+    colValBEl.style.display = "none";
+    colValCompareEl.innerText = currentAlgorithm === "mean" ? "Atenção média" : "Atenção somada";
+  }
+  
+  const tableBody = document.querySelector("#interactions-table tbody");
+  tableBody.innerHTML = top15.map(row => {
+    let cells = "";
+    if (currentAlgorithm === "subtraction") {
+      cells = `
+        <td>${row.sAttn.toFixed(4)}</td>
+        <td>${row.dAttn.toFixed(4)}</td>
+      `;
+    }
+    
+    let compStyle = "";
+    if (currentAlgorithm === "subtraction") {
+      compStyle = `style="font-weight: 700; color: ${row.val > 0 ? '#d62728' : (row.val < 0 ? '#1f77b4' : '#222')}"`;
+    } else {
+      compStyle = 'style="font-weight: 700;"';
+    }
+    
+    return `
+      <tr>
+        <td>${row.sName}</td>
+        <td>${row.dName}</td>
+        ${cells}
+        <td ${compStyle}>${row.val.toFixed(4)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+window.onload = init;
+</script>
+</div>
+</body></html>
