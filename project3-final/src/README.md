@@ -139,7 +139,7 @@ streamlit run notebooks/explain_gat_interactive.py    # GAT tutorial
   `splits.npz`. `src/evaluate.py` reads `splits.npz` and warns loudly if it
   is missing — that warning means data leakage; retrain.
 - **Class weights** are computed from the **train set only**.
-- **Model selection** is on validation loss with early stopping (patience 30).
+- **Model selection** is on validation loss with early stopping (`EARLY_STOP_PATIENCE = 50` in `src/train.py`).
 - **Per-class aggregation** of attention uses **only correctly classified test
   samples** (see `src.interpret.aggregate_per_class`).
 - **TOIL caveat.** TOIL expression values are *already* `log2(TPM+0.001)`. Do
