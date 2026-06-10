@@ -211,23 +211,6 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     margin-bottom: 1.5em;
 }
-.sub-select-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5em;
-    margin-bottom: 1em;
-    background: #f1f5f9;
-    padding: 0.6em;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
-}
-.sub-select-group label {
-    font-size: 0.78em;
-    font-weight: 700;
-    color: #475569;
-    margin-bottom: 0.2em;
-    display: block;
-}
 .badge {
     display: inline-block;
     padding: 0.15em 0.5em;
@@ -282,6 +265,13 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
       </select>
     </div>
     <div class="control-group">
+      <label>Predicted Class</label>
+      <select id="pred-cls">
+        <option value="">all classes</option>
+        <option>Primary Tumor</option><option>Metastasis</option><option>Benign Nevus</option>
+      </select>
+    </div>
+    <div class="control-group">
       <label>Split</label>
       <select id="split">
         <option value="all">all splits</option>
@@ -297,6 +287,10 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
         <option value="true">correct only</option>
         <option value="false">incorrect only</option>
       </select>
+    </div>
+    <div class="control-group">
+      <label>Min Confidence (<span id="conf-val">0</span>%)</label>
+      <input type="range" id="conf-filter" min="0" max="100" step="5" value="0" oninput="document.getElementById('conf-val').innerText=this.value;">
     </div>
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5em; margin-bottom: 0.3em;">
@@ -321,21 +315,14 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
           <button class="alg-btn" id="alg-subtraction" onclick="setAlgorithm('subtraction')">Subtraction</button>
         </div>
       </div>
-      
-      <div class="sub-select-group" id="subtraction-controls" style="display: none;">
-        <div>
-          <label>Sample A (Minuend)</label>
-          <select id="sample-a" onchange="renderGraph()"></select>
-        </div>
-        <div>
-          <label>Sample B (Subtrahend)</label>
-          <select id="sample-b" onchange="renderGraph()"></select>
-        </div>
-      </div>
 
       <div class="control-group">
         <label>Edge Filter Threshold (<span id="threshold-val">0.02</span>)</label>
         <input type="range" id="threshold" min="0.0" max="0.3" step="0.005" value="0.02" oninput="document.getElementById('threshold-val').innerText=this.value; renderGraph();">
+      </div>
+      <div class="control-group" style="display: flex; align-items: center; gap: 0.5em; margin-top: 1em;">
+        <input type="checkbox" id="toggle-labels" onchange="renderGraph();" style="width: auto; cursor: pointer;">
+        <label for="toggle-labels" style="margin-bottom: 0; cursor: pointer; text-transform: none; font-size: 0.85em; letter-spacing: normal;">Show Gene Names on Graph</label>
       </div>
     </div>
   </div>
@@ -350,14 +337,8 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
       <h3 style="margin-top: 0; font-size: 1.1em; color: #1e293b;">Selected Samples Information</h3>
       <table id="selected-table">
         <thead>
-          <tr>
-            <th>idx</th>
-            <th>patient id</th>
-            <th>true class</th>
-            <th>predicted</th>
-            <th>split</th>
-            <th>confidence</th>
-            <th>correct?</th>
+          <tr id="selected-table-header">
+            <!-- Headers filled dynamically in renderSelectedTableHeader() -->
           </tr>
         </thead>
         <tbody></tbody>
@@ -384,20 +365,22 @@ select { padding: 0.5em; font-size: 1em; margin-right: 0.5em; }
 
 <script>
 let selectedSampleIds = new Set([0, 1]); // Default selection
+let comparisonGroup = new Set([0, 1]); // Active in Mean / Addition
+let minuendGroup = new Set([0]); // Subtraction Minuend list
+let subtrahendGroup = new Set([1]); // Subtraction Subtrahend list
 let currentAlgorithm = "mean";
 
 const sampleListEl = document.getElementById("sample-list");
 const qEl = document.getElementById("q");
 const clsEl = document.getElementById("cls");
+const predClsEl = document.getElementById("pred-cls");
 const splitEl = document.getElementById("split");
 const okEl = document.getElementById("ok");
-const subControlsEl = document.getElementById("subtraction-controls");
-const sampleAEl = document.getElementById("sample-a");
-const sampleBEl = document.getElementById("sample-b");
+const confFilterEl = document.getElementById("conf-filter");
 
 function init() {
   // Filter listeners
-  [qEl, clsEl, splitEl, okEl].forEach(el => el.addEventListener("input", filterSamples));
+  [qEl, clsEl, predClsEl, splitEl, okEl, confFilterEl].forEach(el => el.addEventListener("input", filterSamples));
   
   // Initialize sample list
   filterSamples();
@@ -410,14 +393,18 @@ function init() {
 function filterSamples() {
   const qv = qEl.value.toLowerCase();
   const clsv = clsEl.value;
+  const predclsv = predClsEl.value;
   const splitv = splitEl.value;
   const okv = okEl.value;
+  const confv = parseFloat(confFilterEl.value) / 100;
   
   const matches = EXPLORATION_DATA.samples.filter(s => 
     (!qv || s.id.toLowerCase().includes(qv)) &&
     (!clsv || s.true === clsv) &&
+    (!predclsv || s.pred === predclsv) &&
     (!okv || String(s.ok) === okv) &&
-    (splitv === "all" || s.split === splitv)
+    (splitv === "all" || s.split === splitv) &&
+    (s.conf >= confv)
   );
   
   document.getElementById("match-count").innerText = `${matches.length} matched`;
@@ -446,8 +433,19 @@ function toggleSampleCheckbox(idx) {
 function toggleSample(idx) {
   if (selectedSampleIds.has(idx)) {
     selectedSampleIds.delete(idx);
+    comparisonGroup.delete(idx);
+    minuendGroup.delete(idx);
+    subtrahendGroup.delete(idx);
   } else {
     selectedSampleIds.add(idx);
+    comparisonGroup.add(idx);
+    
+    // Sensible auto-distribution in Subtraction list
+    if (minuendGroup.size === 0) {
+      minuendGroup.add(idx);
+    } else if (subtrahendGroup.size === 0) {
+      subtrahendGroup.add(idx);
+    }
   }
   updateSelectedPane();
   renderGraph();
@@ -456,17 +454,28 @@ function toggleSample(idx) {
 function selectAll(checked) {
   const qv = qEl.value.toLowerCase();
   const clsv = clsEl.value;
+  const predclsv = predClsEl.value;
   const splitv = splitEl.value;
   const okv = okEl.value;
+  const confv = parseFloat(confFilterEl.value) / 100;
   
   EXPLORATION_DATA.samples.forEach(s => {
     const match = (!qv || s.id.toLowerCase().includes(qv)) &&
                   (!clsv || s.true === clsv) &&
+                  (!predclsv || s.pred === predclsv) &&
                   (!okv || String(s.ok) === okv) &&
-                  (splitv === "all" || s.split === splitv);
+                  (splitv === "all" || s.split === splitv) &&
+                  (s.conf >= confv);
     if (match) {
-      if (checked) selectedSampleIds.add(s.idx);
-      else selectedSampleIds.delete(s.idx);
+      if (checked) {
+        selectedSampleIds.add(s.idx);
+        comparisonGroup.add(s.idx);
+      } else {
+        selectedSampleIds.delete(s.idx);
+        comparisonGroup.delete(s.idx);
+        minuendGroup.delete(s.idx);
+        subtrahendGroup.delete(s.idx);
+      }
     }
   });
   
@@ -480,12 +489,152 @@ function setAlgorithm(alg) {
   document.querySelectorAll(".alg-btn").forEach(b => b.classList.remove("active"));
   document.getElementById(`alg-${alg}`).classList.add("active");
   
-  if (alg === "subtraction") {
-    subControlsEl.style.display = "grid";
-  } else {
-    subControlsEl.style.display = "none";
+  updateSelectedPane();
+  renderGraph();
+}
+
+function syncComparisonGroups() {
+  // Cleanup sets of any deselected records
+  for (let id of comparisonGroup) {
+    if (!selectedSampleIds.has(id)) comparisonGroup.delete(id);
+  }
+  for (let id of minuendGroup) {
+    if (!selectedSampleIds.has(id)) minuendGroup.delete(id);
+  }
+  for (let id of subtrahendGroup) {
+    if (!selectedSampleIds.has(id)) subtrahendGroup.delete(id);
   }
   
+  // Auto-populate to ensure UI is never empty
+  if (comparisonGroup.size === 0 && selectedSampleIds.size > 0) {
+    selectedSampleIds.forEach(id => comparisonGroup.add(id));
+  }
+  if (minuendGroup.size === 0 && subtrahendGroup.size === 0 && selectedSampleIds.size > 0) {
+    const arr = Array.from(selectedSampleIds).sort((a,b) => a - b);
+    if (arr.length > 0) minuendGroup.add(arr[0]);
+    if (arr.length > 1) subtrahendGroup.add(arr[1]);
+  }
+}
+
+function renderSelectedTableHeader() {
+  const tr = document.getElementById("selected-table-header");
+  let compHeaders = "";
+  if (currentAlgorithm === "subtraction") {
+    compHeaders = `
+      <th style="text-align: center; width: 120px;">
+        <div>Minuend</div>
+        <div style="font-size:0.75em; font-weight:normal; margin-top:4px;">
+          <a href="#" onclick="event.preventDefault(); batchToggleCompTable('min', true)">All</a> | 
+          <a href="#" onclick="event.preventDefault(); batchToggleCompTable('min', false)">Clear</a>
+        </div>
+      </th>
+      <th style="text-align: center; width: 120px;">
+        <div>Subtrahend</div>
+        <div style="font-size:0.75em; font-weight:normal; margin-top:4px;">
+          <a href="#" onclick="event.preventDefault(); batchToggleCompTable('sub', true)">All</a> | 
+          <a href="#" onclick="event.preventDefault(); batchToggleCompTable('sub', false)">Clear</a>
+        </div>
+      </th>
+    `;
+  } else {
+    compHeaders = `
+      <th style="text-align: center; width: 150px;">
+        <div>Use in comparison</div>
+        <div style="font-size:0.75em; font-weight:normal; margin-top:4px;">
+          <a href="#" onclick="event.preventDefault(); batchToggleCompTable('comp', true)">All</a> | 
+          <a href="#" onclick="event.preventDefault(); batchToggleCompTable('comp', false)">Clear</a>
+        </div>
+      </th>
+    `;
+  }
+
+  tr.innerHTML = `
+    <th onclick="sortSelectedTable(0, 'int')">idx</th>
+    <th onclick="sortSelectedTable(1, 'str')">patient id</th>
+    <th onclick="sortSelectedTable(2, 'str')">true class</th>
+    <th onclick="sortSelectedTable(3, 'str')">predicted</th>
+    <th onclick="sortSelectedTable(4, 'str')">split</th>
+    <th onclick="sortSelectedTable(5, 'float')">confidence</th>
+    <th onclick="sortSelectedTable(6, 'str')">correct?</th>
+    ${compHeaders}
+  `;
+}
+
+function batchToggleCompTable(type, checkAll) {
+  const tbody = document.querySelector("#selected-table tbody");
+  if (!tbody) return;
+  const rows = tbody.querySelectorAll("tr");
+
+  // Get active filter parameters to make sure batch changes only affect visually matched rows
+  const qv = qEl.value.toLowerCase();
+  const clsv = clsEl.value;
+  const predclsv = predClsEl.value;
+  const splitv = splitEl.value;
+  const okv = okEl.value;
+  const confv = parseFloat(confFilterEl.value) / 100;
+
+  rows.forEach(row => {
+    const idx = parseInt(row.cells[0].innerText.trim());
+    if (isNaN(idx)) return;
+
+    const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+    if (!s) return;
+
+    const baseFilterMatch = (!qv || s.id.toLowerCase().includes(qv)) &&
+                            (!clsv || s.true === clsv) &&
+                            (!predclsv || s.pred === predclsv) &&
+                            (!okv || String(s.ok) === okv) &&
+                            (splitv === "all" || s.split === splitv) &&
+                            (s.conf >= confv);
+
+// If clearing, clear everything currently visible. If selecting all, only check rows passing the filters.
+    if (!checkAll || baseFilterMatch) {
+      if (type === 'comp') {
+        if (checkAll) comparisonGroup.add(idx); else comparisonGroup.delete(idx);
+      } else if (type === 'min') {
+        if (checkAll) {
+          minuendGroup.add(idx);
+          subtrahendGroup.delete(idx);
+        } else {
+          minuendGroup.delete(idx);
+        }
+      } else if (type === 'sub') {
+        if (checkAll) {
+          subtrahendGroup.add(idx);
+          minuendGroup.delete(idx);
+        } else {
+          subtrahendGroup.delete(idx);
+        }
+      }
+    }
+  });
+
+  updateSelectedPane();
+  renderGraph();
+}
+
+function handleCompToggle(idx, type, checked) {
+  if (type === 'comp') {
+    if (checked) {
+      comparisonGroup.add(idx);
+    } else {
+      comparisonGroup.delete(idx);
+    }
+  } else if (type === 'min') {
+    if (checked) {
+      minuendGroup.add(idx);
+      subtrahendGroup.delete(idx); // Mutually exclusive
+    } else {
+      minuendGroup.delete(idx);
+    }
+  } else if (type === 'sub') {
+    if (checked) {
+      subtrahendGroup.add(idx);
+      minuendGroup.delete(idx); // Mutually exclusive
+    } else {
+      subtrahendGroup.delete(idx);
+    }
+  }
   updateSelectedPane();
   renderGraph();
 }
@@ -494,24 +643,12 @@ function updateSelectedPane() {
   const activeIds = Array.from(selectedSampleIds);
   const pane = document.getElementById("selected-info-pane");
   
-  // Update subtraction dropdowns
-  const prevA = sampleAEl.value;
-  const prevB = sampleBEl.value;
+  // Clean up any deleted objects from the sets, but do NOT remove items hidden by filters
+  for (let id of comparisonGroup) { if (!selectedSampleIds.has(id)) comparisonGroup.delete(id); }
+  for (let id of minuendGroup) { if (!selectedSampleIds.has(id)) minuendGroup.delete(id); }
+  for (let id of subtrahendGroup) { if (!selectedSampleIds.has(id)) subtrahendGroup.delete(id); }
   
-  const optionsHtml = activeIds.map(idx => {
-    const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
-    return `<option value="${idx}">idx ${idx} - ${s.id.substring(0, 12)}...</option>`;
-  }).join("");
-  
-  sampleAEl.innerHTML = optionsHtml;
-  sampleBEl.innerHTML = optionsHtml;
-  
-  if (activeIds.includes(Number(prevA))) sampleAEl.value = prevA;
-  else if (activeIds.length > 0) sampleAEl.value = activeIds[0];
-  
-  if (activeIds.includes(Number(prevB))) sampleBEl.value = prevB;
-  else if (activeIds.length > 1) sampleBEl.value = activeIds[1];
-  else if (activeIds.length > 0) sampleBEl.value = activeIds[0];
+  renderSelectedTableHeader();
 
   if (activeIds.length === 0) {
     pane.style.display = "none";
@@ -520,12 +657,61 @@ function updateSelectedPane() {
   
   pane.style.display = "block";
   const tbody = document.querySelector("#selected-table tbody");
+  
+  // Get active filter parameters to evaluate row visibility dynamically
+  const qv = qEl.value.toLowerCase();
+  const clsv = clsEl.value;
+  const predclsv = predClsEl.value;
+  const splitv = splitEl.value;
+  const okv = okEl.value;
+  const confv = parseFloat(confFilterEl.value) / 100;
+
   tbody.innerHTML = activeIds.map(idx => {
     const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
     const color = s.true === "Primary Tumor" ? "#d62728" : (s.true === "Metastasis" ? "#ff7f0e" : "#2ca02c");
     const predColor = s.pred === "Primary Tumor" ? "#d62728" : (s.pred === "Metastasis" ? "#ff7f0e" : "#2ca02c");
+    
+    // Evaluate if this specific row matches the visual filters
+    const baseFilterMatch = (!qv || s.id.toLowerCase().includes(qv)) &&
+                            (!clsv || s.true === clsv) &&
+                            (!predclsv || s.pred === predclsv) &&
+                            (!okv || String(s.ok) === okv) &&
+                            (splitv === "all" || s.split === splitv) &&
+                            (s.conf >= confv);
+                            
+    // Row remains visible if it passes the filters OR if it is actively checked for comparison
+    let isCheckedInCurrentAlg = false;
+    if (currentAlgorithm === "subtraction") {
+      isCheckedInCurrentAlg = minuendGroup.has(idx) || subtrahendGroup.has(idx);
+    } else {
+      isCheckedInCurrentAlg = comparisonGroup.has(idx);
+    }
+    
+    const rowStyle = (baseFilterMatch || isCheckedInCurrentAlg) ? "" : "display: none;";
+    
+    let compCols = "";
+    if (currentAlgorithm === "subtraction") {
+      const isMin = minuendGroup.has(idx) ? "checked" : "";
+      const isSub = subtrahendGroup.has(idx) ? "checked" : "";
+      compCols = `
+        <td style="text-align: center;">
+          <input type="checkbox" ${isMin} onchange="handleCompToggle(${idx}, 'min', this.checked)">
+        </td>
+        <td style="text-align: center;">
+          <input type="checkbox" ${isSub} onchange="handleCompToggle(${idx}, 'sub', this.checked)">
+        </td>
+      `;
+    } else {
+      const isComp = comparisonGroup.has(idx) ? "checked" : "";
+      compCols = `
+        <td style="text-align: center;">
+          <input type="checkbox" ${isComp} onchange="handleCompToggle(${idx}, 'comp', this.checked)">
+        </td>
+      `;
+    }
+
     return `
-      <tr>
+      <tr style="${rowStyle}">
         <td>${s.idx}</td>
         <td>${s.id}</td>
         <td><span class="badge" style="background:${color}">${s.true}</span></td>
@@ -533,6 +719,7 @@ function updateSelectedPane() {
         <td>${s.split === "val" ? "validation" : s.split}</td>
         <td>${(s.conf * 100).toFixed(1)}%</td>
         <td>${s.ok ? '<span style="color:#2ca02c">✓</span>' : '<span style="color:#d62728">✗</span>'}</td>
+        ${compCols}
       </tr>
     `;
   }).join("");
@@ -553,59 +740,85 @@ function renderGraph() {
     return;
   }
 
+  const compIds = Array.from(comparisonGroup);
+  const numComp = compIds.length;
+  
+  if (numComp === 0 && currentAlgorithm !== "subtraction") {
+    Plotly.newPlot("plotly-graph", [], {
+      annotations: [{ text: "Please check at least one 'Use in comparison' sample in the table below", showarrow: false, font: { size: 16 } }],
+      xaxis: { visible: false }, yaxis: { visible: false }
+    });
+    document.querySelector("#interactions-table tbody").innerHTML = "<tr><td colspan='5' style='text-align: center; color: #64748b;'>No samples active in comparison</td></tr>";
+    return;
+  }
+
   let edgeAttns = new Array(EXPLORATION_DATA.edges.length).fill(0);
   let nodeExprs = new Array(EXPLORATION_DATA.genes.length).fill(0);
   
-  // Calculate average gene expressions for selected nodes
+  // Calculate average gene expressions for active comparison nodes
+  const exprIds = currentAlgorithm === "subtraction" ? Array.from(selectedSampleIds) : compIds;
+  const numExpr = exprIds.length || 1;
   for (let i = 0; i < EXPLORATION_DATA.genes.length; i++) {
     let sum = 0;
-    for (let idx of activeIds) {
+    for (let idx of exprIds) {
       const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
       if (s) sum += s.expr[i];
     }
-    nodeExprs[i] = sum / numActive;
+    nodeExprs[i] = sum / numExpr;
   }
 
   let subtitle = "";
-  let sample1Id = null, sample2Id = null;
   
   if (currentAlgorithm === "mean") {
-    subtitle = `Mean attention of ${numActive} sample(s)`;
+    subtitle = `Mean attention of ${numComp} sample(s)`;
     for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
       let sum = 0;
-      for (let idx of activeIds) {
+      for (let idx of compIds) {
         const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
         if (s) sum += s.attn[i];
       }
-      edgeAttns[i] = sum / numActive;
+      edgeAttns[i] = sum / numComp;
     }
   } else if (currentAlgorithm === "addition") {
-    subtitle = `Addition attention of ${numActive} sample(s)`;
+    subtitle = `Addition attention of ${numComp} sample(s)`;
     for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
       let sum = 0;
-      for (let idx of activeIds) {
+      for (let idx of compIds) {
         const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
         if (s) sum += s.attn[i];
       }
       edgeAttns[i] = sum;
     }
   } else if (currentAlgorithm === "subtraction") {
-    sample1Id = Number(sampleAEl.value);
-    sample2Id = Number(sampleBEl.value);
-    if (isNaN(sample1Id) || isNaN(sample2Id)) {
+    const minIds = Array.from(minuendGroup);
+    const subIds = Array.from(subtrahendGroup);
+    
+    if (minIds.length === 0 || subIds.length === 0) {
       Plotly.newPlot("plotly-graph", [], {
-        annotations: [{ text: "Select two samples to perform subtraction", showarrow: false, font: { size: 16 } }],
+        annotations: [{ text: "Please select at least one Minuend and one Subtrahend sample in the table below", showarrow: false, font: { size: 16 } }],
         xaxis: { visible: false }, yaxis: { visible: false }
       });
+      document.querySelector("#interactions-table tbody").innerHTML = "<tr><td colspan='5' style='text-align: center; color: #64748b;'>Select Minuend and Subtrahend samples below</td></tr>";
       return;
     }
-    const sA = EXPLORATION_DATA.samples.find(s => s.idx === sample1Id);
-    const sB = EXPLORATION_DATA.samples.find(s => s.idx === sample2Id);
-    subtitle = `Subtraction: Sample ${sample1Id} (${sA.id.substring(0, 10)}) − Sample ${sample2Id} (${sB.id.substring(0, 10)})`;
+    
+    subtitle = `Subtraction: Mean of [${minIds.join(", ")}] − Mean of [${subIds.join(", ")}]`;
     for (let i = 0; i < EXPLORATION_DATA.edges.length; i++) {
-      if (sA && sB) {
-        edgeAttns[i] = sA.attn[i] - sB.attn[i];
+      let minSum = 0;
+      for (let idx of minIds) {
+        const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+        if (s) minSum += s.attn[i];
       }
+      let minMean = minSum / minIds.length;
+      
+      let subSum = 0;
+      for (let idx of subIds) {
+        const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+        if (s) subSum += s.attn[i];
+      }
+      let subMean = subSum / subIds.length;
+      
+      edgeAttns[i] = minMean - subMean;
     }
   }
   
@@ -630,11 +843,31 @@ function renderGraph() {
     const val = edgeAttns[i];
     const absVal = Math.abs(val);
     
+    let minuendMeanAttn = 0;
+    let subtrahendMeanAttn = 0;
+    if (currentAlgorithm === "subtraction") {
+      const minIds = Array.from(minuendGroup);
+      const subIds = Array.from(subtrahendGroup);
+      let minSum = 0;
+      for (let idx of minIds) {
+        const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+        if (s) minSum += s.attn[i];
+      }
+      minuendMeanAttn = minIds.length ? minSum / minIds.length : 0;
+      
+      let subSum = 0;
+      for (let idx of subIds) {
+        const s = EXPLORATION_DATA.samples.find(sm => sm.idx === idx);
+        if (s) subSum += s.attn[i];
+      }
+      subtrahendMeanAttn = subIds.length ? subSum / subIds.length : 0;
+    }
+
     topEdgesList.push({
       sName: EXPLORATION_DATA.genes[sNode],
       dName: EXPLORATION_DATA.genes[dNode],
-      sAttn: sample1Id !== null ? EXPLORATION_DATA.samples.find(sm => sm.idx === sample1Id).attn[i] : null,
-      dAttn: sample2Id !== null ? EXPLORATION_DATA.samples.find(sm => sm.idx === sample2Id).attn[i] : null,
+      sAttn: minuendMeanAttn,
+      dAttn: subtrahendMeanAttn,
       val: val,
       absVal: absVal
     });
@@ -650,7 +883,7 @@ function renderGraph() {
     const norm = absVal / maxAbsAttn;
     
     if (currentAlgorithm === "subtraction") {
-      // Diverging colors: Red for positive (Sample A higher), Blue for negative (Sample B higher)
+      // Diverging colors: Red for positive (Minuend higher), Blue for negative (Subtrahend higher)
       if (val > 0) {
         color = `rgba(${Math.round(214 + 41*norm)}, ${Math.round(39 - 39*norm)}, ${Math.round(40 - 40*norm)}, ${0.3 + 0.7*norm})`;
       } else {
@@ -686,10 +919,14 @@ function renderGraph() {
     nodeColors.push(nodeExprs[n]);
   }
   
+  const showLabels = document.getElementById("toggle-labels").checked;
+
   const nodeTrace = {
     x: nodeX,
     y: nodeY,
-    mode: 'markers',
+    mode: showLabels ? 'markers+text' : 'markers',
+    text: showLabels ? nodes.map(n => EXPLORATION_DATA.genes[n]) : null,
+    textposition: 'top center',
     marker: {
       size: 9,
       color: nodeColors,
@@ -725,8 +962,8 @@ function renderGraph() {
   if (currentAlgorithm === "subtraction") {
     colValAEl.style.display = "table-cell";
     colValBEl.style.display = "table-cell";
-    colValAEl.innerText = `Attn (Sample ${sample1Id})`;
-    colValBEl.innerText = `Attn (Sample ${sample2Id})`;
+    colValAEl.innerText = "Mean Attn (Minuend)";
+    colValBEl.innerText = "Mean Attn (Subtrahend)";
     colValCompareEl.innerText = "Difference";
   } else {
     colValAEl.style.display = "none";
@@ -760,6 +997,36 @@ function renderGraph() {
       </tr>
     `;
   }).join("");
+}
+
+let selectedSortDirection = true; 
+let currentSortCol = -1;
+
+function sortSelectedTable(colIndex, type) {
+  const tbody = document.querySelector("#selected-table tbody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  
+  if (currentSortCol === colIndex) {
+    selectedSortDirection = !selectedSortDirection;
+  } else {
+    selectedSortDirection = true;
+    currentSortCol = colIndex;
+  }
+  
+  rows.sort((a, b) => {
+    let valA = a.cells[colIndex].innerText.trim();
+    let valB = b.cells[colIndex].innerText.trim();
+    
+    if (type === 'int') {
+      return selectedSortDirection ? parseInt(valA) - parseInt(valB) : parseInt(valB) - parseInt(valA);
+    } else if (type === 'float') {
+      return selectedSortDirection ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
+    } else {
+      return selectedSortDirection ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    }
+  });
+  
+  rows.forEach(row => tbody.appendChild(row));
 }
 
 window.onload = init;
