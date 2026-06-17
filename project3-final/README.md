@@ -39,27 +39,30 @@ biológico reprodutível e não apenas a estrutura de hubs do PPI.
 
 # Slides
 
-> Adicionar o link/arquivo PDF dos slides em `assets/slides/MO413A-P3.pdf`
-> antes da entrega.
+> Os slides da apresentação podem ser encontrados [neste link](assets/slides/MO413A-P3.pdf`).
 
 # Fundamentação Teórica
 
-O melanoma cutâneo decorre da transformação maligna de melanócitos e progride por
-um continuum biológico desde lesões pigmentares benignas (nevos) até tumores
-primários invasivos e disseminação metastática. Programas transcricionais ligados
-à diferenciação melanocítica (*MITF*, *TYR*, *PMEL*, *DCT*), à transição
-fenotípica/EMT-like e à resposta imune adaptativa (*CD8A*, *GZMB*, *PRF1*, *CXCL9*)
-têm sido associados, respectivamente, à fase proliferativa, à invasão e ao
-prognóstico sob imunoterapia [1,2].
+
+O câncer de pele é o mais recorrente em todo o mundo, com incidência progressivamente crescente nas últimas décadas, configurando um relevante problema de saúde pública. Clinicamente, classifica-se em dois grandes grupos: o melanoma cutâneo e o câncer de pele não-melanoma (CPNM), sendo este último responsável pela expressiva maioria dos casos diagnosticados globalmente (Sung et al., 2021). Segundo dados do GLOBOCAN, a taxa de incidência padronizada por idade para o melanoma foi de 3,4 por 100.000 habitantes em 2020, com taxa de mortalidade de 0,55 por 100.000, e as regiões de maior incidência mundial concentram-se na Austrália e Nova Zelândia (Huang et al., 2023). No Brasil, o câncer de pele é a neoplasia mais frequente, correspondendo a 30% de todos os diagnósticos oncológicos do país, com dados longitudinais evidenciando crescimento expressivo da morbidade, que passou de 14,88 para 27,69 casos por 100.000 habitantes entre 2012 e 2022 (Castro, Martins e Kock, 2024), e 122,90 por 100.000 habitantes em cada ano do triênio de 2026 a 2028 (INCA, 2026). O CPNM, cujos principais subtipos são o carcinoma basocelular (CBC) e o carcinoma espinocelular (CEC), é responsável por mais de 176.000 casos anuais no território nacional, com acometimento predominante da população de pele branca e correlação negativa com a latitude geográfica, sendo as regiões Sul e Sudeste as mais afetadas (Castro, Martins e Kock, 2024). O número de casos estimados para 2026 pode chegar a 263.280 (INCA, 2026).
+O melanoma cutâneo origina-se da transformação maligna dos melanócitos, células localizadas predominantemente na camada basal da epiderme e responsáveis pela síntese de melanina. Embora represente uma proporção minoritária dos cânceres de pele em termos de incidência absoluta, é a forma mais letal da doença, responsável pela maioria dos óbitos relacionados a neoplasias cutâneas em virtude de seu elevado potencial de invasão e metástase precoce (Gieniusz, Skrzydlewska e Łuczaj, 2024). A radiação ultravioleta (UV) constitui o principal fator etiológico ambiental, exercendo efeito carcinogênico por meio de danos oxidativos ao DNA, às proteínas e aos lipídios celulares, comprometendo a regulação do ciclo celular e favorecendo a evasão da vigilância imunológica (Gieniusz, Skrzydlewska e Łuczaj, 2024). No plano molecular, a patogênese do melanoma caracteriza-se por acentuada heterogeneidade genômica, com o dano solar cumulativo modulando o perfil mutacional dos tumores; dentre as alterações mais prevalentes, destaca-se a mutação no gene BRAF, particularmente a variante BRAFV600E, cuja ativação constitutiva da via RAF/MEK/ERK (MAPK) promove proliferação celular desregulada e resistência à apoptose, sendo identificada em 40 a 50% dos melanomas cutâneos (Colombino et al., 2024). O prognóstico da doença é fortemente influenciado pelo estadiamento no momento do diagnóstico, com impacto significativo na sobrevida global dos pacientes (Cirillo, 2025).
+O câncer de pele não-melanoma compreende um espectro heterogêneo de neoplasias derivadas de células epidérmicas não melanocíticas, dentre as quais o CBC e o CEC representam os subtipos de maior relevância clínica e epidemiológica (Attal et al., 2024). O CBC, responsável por aproximadamente 80% dos casos de CPNM, origina-se das células basais da epiderme e apresenta crescimento lento com baixo potencial metastático, embora possa ocasionar destruição tecidual local significativa na ausência de tratamento oportuno (Castro, Martins e Kock, 2024). Sua patogênese envolve primariamente a ativação aberrante da via de sinalização Hedgehog (HH), frequentemente associada a mutações inativadoras no gene PTCH1 decorrentes da exposição cumulativa à radiação UV (Attal et al., 2024). O CEC, por sua vez, origina-se de queratinócitos com displasia progressiva e apresenta comportamento biologicamente mais agressivo, com maior capacidade de invasão local e risco de disseminação linfática e hematogênica (Didona et al., 2018). Entre os fatores de risco compartilhados por ambos os subtipos, destacam-se a exposição crônica à radiação UV, o fotótipo cutâneo claro, a idade avançada, a imunossupressão e a predisposição genética, sendo o diagnóstico precoce determinante para a redução da morbimortalidade associada a essas neoplasias (Attal et al., 2024; Didona et al., 2018).
+
 
 Redes PPI fornecem um *scaffold* de relações funcionais sobre o qual a expressão
 gênica pode ser interpretada como um sinal estruturado. **Graph Neural Networks**
-e, em particular, **Graph Attention Networks (GAT/GATv2)** [3,4] aprendem
+e, em particular, **Graph Attention Networks (GAT/GATv2)** aprendem
 representações em grafos atribuindo pesos adaptativos às arestas, o que permite
 identificar, a posteriori, **quais conexões PPI mais contribuíram para a
 predição** — propriedade explorada aqui como uma forma de interpretabilidade
 *built-in*. Comparado a abordagens clássicas (PCA, t-SNE sobre expressão), o GAT
 incorpora explicitamente a topologia biológica conhecida.
+
+Mais especificamente, a equação das _embeddings_  _H_ de uma determinada camada _l_ de uma Graph Neural Network pode ser representada conforme ilustra a figura a seguir, onde se difere de uma rede neural "tradicional" com a utilização de uma matriz adjacente _A_ , representando a relação entre cada nó por meio de uma matriz de 0 e 1, e uma matriz diagonal _D_, que se caracteriza uma matriz com o grau de cada nó e cuja finalidade é normalizar a matriz _A_ . Nas equações \sigma representa a função de ativação e _W_ a matriz de pesos a serem aprendidos no treinamento do modelo.
+
+![Graph Neural Network](assets/images/gat.png)
+
+GAT
 
 A motivação clínica e técnica deste trabalho dialoga diretamente com (i) o uso da
 plataforma **Open Targets** para priorização de alvos terapêuticos [5], (ii) o
@@ -70,28 +73,12 @@ recompute **TOIL** para tornar TCGA e GTEx comparáveis [6] e (iii) o consórcio
 
 As perguntas evoluíram em relação à P2 (centradas em centralidade clássica de PPI
 e *globalScore*) para incorporar o eixo de aprendizado em grafos:
+1. Como as redes gênicas diferem entre câncer de pele melanoma e não-melanoma?
+2. Existem genes “exclusivos” em cada tipo de câncer? 
+3. Existem genes compartilhados entre melanoma e não-melanoma?
+4. Quais interações são adquiridas ou perdidas ao longo da progressão do melanoma?
+5. Podemos identificar módulos (clusters) específicos para cada tipo de câncer?
 
-1. **Um GAT treinado sobre PPI distingue *Nevo Benigno*, *Tumor Primário* e
-   *Metástase* a partir apenas da expressão de genes altamente variáveis?**
-   Sim, parcialmente — em 5 *seeds* o modelo atinge acurácia de teste média
-   ≈0.78 (±0.06). A classe Metástase é classificada com F1 ≈0.87, mas Tumor
-   Primário tem F1 ≈0.40 e Nevo Benigno F1 ≈0.57, refletindo o forte
-   desbalanço de classes do *dataset* (367 Metástase / 102 Primário / 23 Nevo).
-2. **A atenção aprendida pelo GAT recupera biologia conhecida de pele/melanoma
-   melhor do que um *baseline* de grau topológico?**
-   Sim — em todos os conjuntos curados (melanócitos, progressão, imune, queratina)
-   o ranking por atenção tem *p* hipergeométrico inferior ao do grau, com efeitos
-   de classe coerentes (e.g., o contraste *Tumor − Nevo* enriquece programas
-   melanocíticos/queratina; *Metástase − Primário* enriquece marcadores imunes).
-3. **Os achados são reprodutíveis entre execuções (estabilidade)?**
-   Sim — em 5 *seeds* independentes, os top-20 por classe têm Jaccard mediano alto,
-   correlações de Spearman sobre *rankings* completos são estáveis e o pseudotempo
-   recuperado preserva a ordem *Nevo → Primário → Metástase*.
-4. **Quais genes emergem como *biomarcadores* candidatos?**
-   O *consensus* de Top-20 entre seeds (`stability_consensus_top20.csv`) é
-   dominado por marcadores melanocíticos clássicos para a transição
-   *Nevo↔Tumor* e por componentes imunes/EMT para *Primário↔Metástase*,
-   convergindo com a literatura.
 
 # Metodologia
 
@@ -410,11 +397,22 @@ Os *p*-valores e ranks completos estão em
 
 ![Spearman — estabilidade dos rankings](assets/images/stability_spearman.png)
 
+**Embeddings**. Na imagem abaixo, cada coluna é uma aresta PPI que o modelo trata com atenção diferente entre as três classes. Cor = atenção média sobre 5 seeds. As arestas são ordenadas por amplitude entre classes / variabilidade entre seeds — valores altos indicam que o modelo trata a aresta como informativa de forma consistente e a diferencia entre tipos de amostra.
+
+![Embeddings](assets/images/embeddings.png)
+
+A imagem a seguir ilustra a clusterização por t-SNE, demonstrando uma segregação entre tumor benigno de tumor primário e metasfáse. Essas duas últimas se misturam na projeção, demonstrando uma dificuldade na segregação das classes.
+
+
+![Embeddings - cluster](assets/images/embeddings_cluster.png)
+
+
 **Pseudotempo.** A projeção dos *embeddings* preserva a ordem
 *Nevo → Primário → Metástase* em todas as seeds, com a atenção média por *bin*
 exibindo trajetórias monótonas para genes melanocíticos (queda) e imunes (subida).
 
 ![Pseudotempo — heatmap](assets/images/pseudotime_heatmap.png)
+
 ![Pseudotempo — linhas por gene](assets/images/pseudotime_lines.png)
 
 **Estabilidade.** Jaccard@K e correlação de Spearman dos rankings completos
@@ -432,7 +430,7 @@ Tumor* e *Metastasis* — usados como evidência interpretativa para os contrast
 discutidos acima.
 
 # Discussão
-
+## Graph Attention Networks
 Os resultados sustentam que a atenção aprendida pelo GAT é **mais do que um
 proxy de hub topológico**: o *baseline* de grau falha em recuperar conjuntos
 curados específicos de classe (especialmente queratina e imune), enquanto a
@@ -460,22 +458,54 @@ baixa expressão; (v) a atenção, embora informativa, é uma medida *post hoc*
 — sua interpretação como “importância causal” deve ser feita com cautela e
 idealmente validada com perturbações *in silico* (ablação de nós/arestas).
 
+## Análise de Graphos (Cytoscape)
+As análises mostraram a existencia de genes exclusivos para cada tipo de câncer, como consta na tabela a seguir:
+
+| Câncer | Quantidade de Genes |
+|---------|----------------:|
+| Melanoma in situ | 583 |
+| Melanoma primário | 75 |
+| Melanoma metastático | 43 |
+| Carcinoma espinocelular | 88 |
+
+A tabela a seguir mostra os genes compartilhados e o tipo de função associada encontrados:
+
+| Genes | Função |
+|--------|---------|
+| CDK1, CDC45, CHEK1, NCAPH, ZWINT | Controle do ciclo celular |
+| RRM2, CHEK1, CDC45 | Replicação e integridade genômica |
+| IFI27, HSPB6, ATG12 | Estresse e sobrevivência |
+| CCN1 | Remodelamento tumoral |
+| MELK, PBK | Proliferação |
+
+Também foi realizada uma análise das interações adiquiridas ou perdidas nao longo da progressão do melanoma (ver figura abaixo, que mostra um exemplo de interação adquirida em melanoma):
+
+- Adquiridas: ERBB2, HRAS, MAPK3, ETS1, HDAC4, PHGDH
+- Perdidas: AKT3, ALDH2, AQP1, ABLIM1, ABI2
+
+
+![Interações adquirida em melanoma](assets/images/interacoes_adquiridas_melanoma.png)
+
+*Exemplo de interação adquirida em melanoma*.
+
+A imagem a seguir mostra um cluster que é do câncer de pele não-melanoma, só aparece nele. Aqui os genes KRT estão associados à queratinização, SPRR1A está associado à diferenciação do queratinócito, e SERPINB são reguladores negativos de apoptose. A cor também mais próxima ao vermelho aponta uma maior expressão em relação à pele saudável.
+
+![Cluster não-melanoma](assets/images/cluster_nao_melanoma.png)
+
+*Cluster do câncer de pele não-melanoma: os genes KRT estão associados à queratinização, SPRR1A está associado à diferenciação do queratinócito, e SERPINB são reguladores negativos de apoptose.*
+
 # Conclusão
 
-Mostramos que um **GATv2 treinado sobre uma PPI fixa** consegue, a partir de
-expressão gênica, distinguir nevos benignos, tumores primários e metástases
-de melanoma com acurácia média ~0.78 (variando 0.72–0.85 entre seeds) — com
-desempenho heterogêneo por classe (Metástase F1 ≈0.87; Primário ≈0.40; Nevo
-≈0.57). Mais importante, mostramos que **a atenção do modelo captura biologia
-coerente com a literatura**, superando *baselines* topológicos em recuperação
-por *gene-set*, e que a análise multi-seed dá robustez aos *rankings* e ao
-pseudotempo derivados.
+Mostramos que um GAT treinado sobre uma rede de interação proteína-proteína (PPI) fixa é capaz de distinguir diferentes estados de progressão do melanoma utilizando apenas perfis de expressão gênica. Em um pipeline reprodutível executado em cinco seeds independentes, combinando amostras do TCGA-SKCM e da coorte GSE112509, o modelo atingiu acurácia média de 78 ± 6%, demonstrando desempenho consistente apesar da variabilidade inerente aos conjuntos de dados biológicos.
 
-Principais desafios: (i) *batch effects* TCGA↔GTEx, resolvidos com TOIL e depois
-com a substituição por GSE112509 para a Class 2; (ii) interpretabilidade —
-projetar uma agregação de atenção que respeitasse classes e amostras corretas;
-(iii) reprodutibilidade — exigiu refatorar o pipeline para suportar *seeds*
-múltiplas com *splits* estratificados independentes.
+Além do desempenho preditivo, observamos que os padrões de atenção aprendidos pelo modelo convergem para sinais biologicamente plausíveis e amplamente descritos na literatura, incluindo genes associados à diferenciação epitelial (família KRT) e à resposta imune tumoral. A concordância entre os genes priorizados pelo modelo e estudos recentes sugere que a atenção captura aspectos relevantes da biologia do melanoma, embora não deva ser interpretada como evidência causal direta.
+
+Os principais desafios encontrados envolveram a integração de dados provenientes de diferentes coortes, a construção de métricas de interpretabilidade adequadas para modelos baseados em atenção e a garantia de reprodutibilidade experimental. A adoção de múltiplas seeds independentes e de um pipeline padronizado permitiu avaliar de forma mais robusta a estabilidade dos resultados.
+
+Também identificamos limitações importantes. Parte do sinal discriminativo aprendido pelo modelo parece refletir diferenças associadas ao sítio anatômico das amostras — particularmente contrastes entre tecido epidérmico e linfonodal — e não exclusivamente mecanismos biológicos de progressão tumoral. Além disso, o desempenho permaneceu desigual entre classes, indicando que a tarefa ainda apresenta desafios de generalização.
+
+Por fim, a evolução do projeto levou a uma reformulação da pergunta científica original. Em vez de comparar diferentes tipos de câncer utilizando métricas clássicas de centralidade em redes biológicas, passamos a investigar a progressão do melanoma por meio de Graph Attention Networks. Essa mudança de foco permitiu explorar não apenas o desempenho preditivo do modelo, mas também sua capacidade de gerar hipóteses biológicas sobre os processos associados à evolução da doença.
+
 
 Lições aprendidas: trabalhar com grafos *por amostra* compartilhando topologia é
 um modelo poderoso quando a topologia é biologicamente significativa; *baselines*
@@ -500,29 +530,44 @@ aplicada a biologia.
 
 # Referências Bibliográficas
 
-[1] Hodis, E., et al. *A landscape of driver mutations in melanoma.* Cell, 2012.
+Hodis E et al. (2012). A landscape of driver mutations in melanoma. Cell.
 
-[2] Tirosh, I., et al. *Dissecting the multicellular ecosystem of metastatic
-melanoma by single-cell RNA-seq.* Science, 2016.
+Tirosh I et al. (2016). Dissecting the multicellular ecosystem of metastatic melanoma by single-cell RNA-seq. Science.
 
-[3] Veličković, P., et al. *Graph Attention Networks.* ICLR, 2018.
+Veličković P, Cucurull G, Casanova A, Romero A, Liò P, Bengio Y (2018). Graph Attention Networks. ICLR 2018.
 
-[4] Brody, S., Alon, U., Yahav, E. *How Attentive are Graph Attention Networks?*
-ICLR, 2022.
+Didona D et al. (2018). Non melanoma skin cancer pathogenesis overview. Biomedicines, 6(1), 6.
 
-[5] Ochoa, D., et al. *Open Targets Platform: supporting systematic
-drug-target identification and prioritisation.* Nucleic Acids Research, 2021.
+Kunz M et al. (2018). RNA-seq analysis of melanocytic nevi and melanomas (GSE112509). Gene Expression Omnibus / Lab Investigation.
 
-[6] Vivian, J., et al. *Toil enables reproducible, open source, big biomedical
-data analyses.* Nature Biotechnology, 2017.
+Fey M, Lenssen JE (2019). Fast Graph Representation Learning with PyTorch Geometric. ICLR Workshop on Representation Learning on Graphs and Manifolds.
 
-[7] Szklarczyk, D., et al. *The STRING database in 2023.* Nucleic Acids Research, 2023.
+Han W, Hu C, Fan Z-J, Shen G-L (2021). Transcript levels of keratin 1/5/6/14/15/16/17 as potential prognostic indicators in melanoma patients. Scientific Reports, 11, 1023.
 
-[8] Cancer Genome Atlas Network. *Genomic Classification of Cutaneous Melanoma.*
-Cell, 2015.
+Ochoa D et al. (2021). Open Targets Platform: supporting systematic drug-target identification and prioritisation. Nucleic Acids Research.
 
-[9] Kunz, M., et al. *RNA-seq analysis of melanocytic nevi and melanomas
-(GSE112509).* Gene Expression Omnibus / *Lab Investigation*, 2018.
+Sung H et al. (2021). Global Cancer Statistics 2020: GLOBOCAN Estimates of Incidence and Mortality Worldwide for 36 Cancers in 185 Countries. CA: A Cancer Journal for Clinicians, 71(3), 209–249.
 
-[10] Fey, M., Lenssen, J. E. *Fast Graph Representation Learning with PyTorch
-Geometric.* ICLR Workshop on Representation Learning on Graphs and Manifolds, 2019.
+Brody S, Alon U, Yahav E (2022). How Attentive are Graph Attention Networks? ICLR 2022.
+
+Szklarczyk D et al. (2023). The STRING database in 2023. Nucleic Acids Research.
+
+Huang J et al. (2023). Global Incidence, Mortality, Risk Factors and Trends of Melanoma. American Journal of Clinical Dermatology, 24, 965–975.
+
+Attal N et al. (2024). Advanced and Metastatic Non-Melanoma Skin Cancer: Epidemiology, Risk Factors, Clinical Features, and Treatment Options. Biomedicines, 12(7), 1448.
+
+Castro LA, Martins MCA, Kock KS (2024). Longitudinal analysis of hospital morbidity and mortality due to skin cancer from 2012 to 2022. Anais Brasileiros de Dermatologia, 100(2), 283–292.
+
+Colombino M et al. (2024). Heterogeneous pathogenesis of melanoma: BRAF mutations and beyond. Seminars in Cancer Biology.
+
+Gieniusz E, Skrzydlewska E, Łuczaj W (2024). Current Insights into the Role of UV Radiation-Induced Oxidative Stress in Melanoma Pathogenesis. International Journal of Molecular Sciences, 25(21), 11651.
+
+Murgas KA, Elkin R, Riaz N, Saucan E, Deasy JO, Tannenbaum AR (2024). Multi-scale geometric network analysis identifies melanoma immunotherapy response gene modules. Scientific Reports, 14, 6082.
+
+Cirillo N (2025). Global epidemiological trends in the incidence and mortality for melanoma. Skin Health and Disease, 5(1), 84.
+
+Instituto Nacional de Câncer (INCA) (2025). Estimativa 2026: Incidência de Câncer no Brasil. Rio de Janeiro: INCA.
+
+Cancer Genome Atlas Network (2015). Genomic Classification of Cutaneous Melanoma. Cell.
+
+Vivian J et al. (2017). Toil enables reproducible, open source, big biomedical data analyses. Nature Biotechnology.
