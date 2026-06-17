@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Interpretabilidade — Análise de Câncer de Pele em Redes Gênicas</title>
+<style>
+
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
+}
+
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 0;
+          color: #222; line-height: 1.55; }
+  .page { max-width: 820px; margin: 0 auto; padding: 0 1em 2em; }
+  h1 { font-size: 1.5em; margin: 0.4em 0 0.2em; }
+  h2 { font-size: 1.1em; margin-top: 1.8em; color: #333; }
+  .meta { color: #666; font-size: 0.9em; }
+  ul { line-height: 1.9; } a { color: #1f77b4; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .hint { color: #888; font-size: 0.9em; }
+  .legend { display: flex; gap: 1.2em; flex-wrap: wrap; margin: 0.6em 0 1.2em; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px;
+            vertical-align: middle; margin-right: 0.4em; border: 1px solid #999; }
+  code { background: #f4f4f4; padding: 0 0.3em; border-radius: 3px; }
+  .callout { background: #f7faff; border-left: 3px solid #1f77b4;
+              padding: 0.7em 1em; margin: 1em 0; font-size: 0.95em; }
+  .back-btn { display: inline-block; padding: 0.4em 0.9em; margin-bottom: 0.6em;
+               background: #1f77b4; color: white !important; border-radius: 5px;
+               text-decoration: none; font-size: 0.9em; }
+  .back-btn:hover { background: #155a8a; text-decoration: none; }
+</style></head><body>
+<header class="site-header">
+  <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="../../pt-br/interpret/index.html" title="PT">PT</a><a href="../../interpret/index.html" title="Switch to EN">EN</a></div>
+    <h1 class="site-title">Análise de Câncer de Pele em Redes Gênicas</h1>
+    <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
+    <nav class="site-nav">
+    <a href="../../pt-br/index.html">Predições</a>
+    <a href="../../pt-br/exploration.html">Exploração</a>
+    <a href="../../pt-br/about-gat.html">O que é uma GAT?</a>
+    <a href="../../pt-br/overview.html">Treinamento</a>
+    <a href="../../pt-br/dataset.html">Base de dados</a>
+    <a href="../../pt-br/interpret/index.html" class="active">Interpretabilidade</a>
+    <a href="../../pt-br/embeddings.html">Embeddings</a>
+    <a href="../../pt-br/pseudotime.html">Pseudotempo</a>
+    <a href="../../pt-br/stability.html">Estabilidade</a>
+    <a href="../../pt-br/biomarkers.html">Biomarcadores</a>
+    </nav>
+  </div>
+</header>
+<div class="page">
+
+<h1>Atenção da GAT — top-30 subgrafos PPI por classe</h1>
+
+<h2>O que você está vendo</h2>
+<p>
+  Cada página abaixo mostra o subgrafo de interações proteína–proteína (PPI)
+  induzido pelos <strong>30 genes mais atendidos</strong> de uma classe, do ponto
+  de vista da Graph Attention Network treinada, no split de teste reservado. A
+  atenção por aresta de cada amostra, em todas as três camadas GAT, é
+  promediada entre as cabeças, somada nos nós de destino e depois promediada
+  entre as amostras <em>classificadas corretamente</em> da classe.
+</p>
+
+<h2>O que significa "escore de atenção"</h2>
+<p>
+  Dentro de cada camada GAT, toda aresta direcionada <em>i → j</em> do grafo PPI
+  carrega um <strong>coeficiente de atenção</strong> α(i→j) — um número que o
+  modelo aprende e que indica <em>quanto o nó j deve ouvir o nó i</em> ao
+  atualizar sua representação. Para um nó de destino j fixo, os valores de
+  α(i→j) são normalizados via softmax entre os vizinhos que chegam em j
+  (incluindo um self-loop), de modo que cada α individual está em
+  <strong>[0, 1]</strong> e a soma dos α que chegam a j vale 1 (por cabeça de
+  atenção, por camada).
+</p>
+<p>
+  Convertemos isso em um escore de importância por gene em três passos:
+</p>
+<ol>
+  <li><strong>Por amostra, por camada:</strong> média do α nas 4 cabeças de
+    atenção e, em seguida, soma dos α que chegam a cada gene (seu destino).</li>
+  <li><strong>Entre as 3 camadas GAT:</strong> soma dos valores por camada (de
+    modo que um gene atendido de forma consistente em camadas mais profundas
+    pontue mais que outro atendido brevemente apenas na camada 1).</li>
+  <li><strong>Entre amostras:</strong> média sobre as amostras de teste
+    <em>corretamente classificadas</em> dentro da classe.</li>
+</ol>
+<p>
+  O escore resultante é adimensional e fica aproximadamente em uma escala
+  <strong>[0, ~3]</strong> (3 camadas × atenção entrante normalizada por
+  softmax). Só importam diferenças relativas entre genes — um gene com escore
+  0,04 vs 0,01 atraiu quatro vezes mais atenção, mesmo que os números pareçam
+  "pequenos". Todos os escores reportados aqui são essas médias por classe.
+</p>
+
+<h2>Como ler a visualização</h2>
+<ul>
+  <li><strong>Tamanho do nó</strong> = importância média da atenção na classe
+    (maior = o modelo dependeu mais desse gene ao classificar amostras desta
+    classe).</li>
+  <li><strong>Cor do nó</strong> = atenção diferencial <em>Tumor − Normal</em>
+    (vermelho = atendido preferencialmente em tumor, azul = preferencialmente
+    em pele normal, branco ≈ neutro).</li>
+  <li><strong>Arestas</strong> = PPIs físicas do STRING (confiança ≥ 200) entre
+    esses genes. O layout é force-directed (Barnes-Hut); pode-se arrastar
+    nós.</li>
+  <li><strong>Passe o mouse</strong> sobre um nó para: símbolo do gene, escore
+    de atenção, escore Tumor − Normal e categoria do gene-set.</li>
+</ul>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#d62728"></span>linhagem melanocítica</span>
+  <span><span class="swatch" style="background:#ff7f0e"></span>progressão de melanoma</span>
+  <span><span class="swatch" style="background:#2ca02c"></span>infiltrado imune</span>
+  <span><span class="swatch" style="background:#1f77b4"></span>queratina / pele normal</span>
+  <span class="hint">(categorias de gene-set de referência — usadas nos bar charts e no heatmap)</span>
+</div>
+
+<h2>Por que isso importa</h2>
+<p>
+  Uma GAT treinada apenas com expressão gênica e topologia PPI pode ser
+  inspecionada para revelar <em>quais genes</em> orientaram cada predição. Se
+  os genes mais atendidos recuperam biologia conhecida do melanoma (marcadores
+  de linhagem melanocítica, assinatura de infiltrado imune, genes do envelope
+  cornificado para pele normal), o modelo está aprendendo um sinal
+  interpretável, não padrões espúrios. Os rankings <em>de contraste</em>
+  (Metástase − Primário, Tumor − Normal) são os mais informativos — eles
+  isolam o que a atenção faz de <strong>diferente</strong> entre classes,
+  além da estrutura estática de hubs do PPI.
+</p>
+
+<div class="callout">
+  <strong>Checagem de sanidade.</strong> Um ranking baseado no grau dos nós é
+  incluído nos bar charts e no heatmap auxiliares. Onde a atenção supera o
+  grau (por exemplo, <em>Metástase − Primário</em> recuperando genes de
+  queratina/pele em p ≈ 2×10⁻⁵ vs. p ≈ 5×10⁻³ apenas pelo grau), a GAT está
+  realmente aprendendo importância específica de classe — e não apenas
+  atendendo a hubs de PPI.
+</div>
+
+<div class="callout" style="background:#fffbf2;border-left-color:#e0a020;">
+  <strong>Por que alguns nós parecem desconectados.</strong> Cada subgrafo é o
+  subgrafo <em>induzido</em> pelos 30 genes mais atendidos. Um nó isolado
+  significa que o gene foi atendido, mas seus parceiros PPI no STRING não
+  estão entre os 30 mais atendidos daquela classe — as arestas continuam
+  existindo no grafo completo, só não dentro desta visão filtrada.
+</div>
+
+<h2>Visões por classe</h2>
+<ul>
+  <li>
+    <a href="subgraph_Primary_Tumor.html"><strong>Tumor Primário</strong></a>
+    <span class="hint">— subgrafo induzido pelos top-30 genes atendidos</span>
+  </li>
+  <li>
+    <a href="subgraph_Metastasis.html"><strong>Metástase</strong></a>
+    <span class="hint">— subgrafo induzido pelos top-30 genes atendidos</span>
+  </li>
+  <li>
+    <a href="subgraph_Benign_Nevus.html"><strong>Nevo Benigno</strong></a>
+    <span class="hint">— subgrafo induzido pelos top-30 genes atendidos</span>
+  </li>
+</ul>
+
+<p class="hint">Figuras estáticas auxiliares (bar charts top-20 por ranking,
+heatmap de enriquecimento de gene-sets, subgrafos em matplotlib) são salvas
+junto ao modelo em <code>data/processed/run_multiseed_seed1/figures/</code>.</p>
+
+</div>
+</body></html>

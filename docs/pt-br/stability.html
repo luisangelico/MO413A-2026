@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Estabilidade — Análise de Câncer de Pele em Redes Gênicas</title>
+<style>
+
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
+}
+
+  body { font-family:-apple-system,system-ui,sans-serif; margin:0;
+          color:#222; line-height:1.6; }
+  .page { max-width:920px; margin:0 auto; padding:0 1em 2em; }
+  h1 { font-size:1.5em; margin:0.4em 0 0.1em; }
+  h2 { font-size:1.15em; margin-top:1.6em; }
+  .meta { color:#666; font-size:0.9em; }
+  .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
+            padding:0.7em 1em; margin:1em 0; }
+  .callout { background:#fffbf2; border-left:3px solid #e0a020;
+              padding:0.7em 1em; margin:1em 0; }
+  table { border-collapse:collapse; font-size:0.92em; margin:0.8em 0; }
+  th, td { padding:0.4em 0.7em; border-bottom:1px solid #eee; text-align:left; }
+  th { background:#f4f4f4; }
+  img { width:100%; max-width:880px; border:1px solid #eee;
+         border-radius:6px; margin:0.6em 0; }
+  code { background:#f4f4f4; padding:0 0.3em; border-radius:3px; }
+</style></head><body>
+<header class="site-header">
+  <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="../pt-br/stability.html" title="PT">PT</a><a href="../stability.html" title="Switch to EN">EN</a></div>
+    <h1 class="site-title">Análise de Câncer de Pele em Redes Gênicas</h1>
+    <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
+    <nav class="site-nav">
+    <a href="../pt-br/index.html">Predições</a>
+    <a href="../pt-br/exploration.html">Exploração</a>
+    <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
+    <a href="../pt-br/dataset.html">Base de dados</a>
+    <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
+    <a href="../pt-br/embeddings.html">Embeddings</a>
+    <a href="../pt-br/pseudotime.html">Pseudotempo</a>
+    <a href="../pt-br/stability.html" class="active">Estabilidade</a>
+    <a href="../pt-br/biomarkers.html">Biomarcadores</a>
+    </nav>
+  </div>
+</header>
+<div class="page">
+
+<h1>Estabilidade multi-seed — os achados são reais?</h1>
+
+<div class="plain">
+  <strong>A pergunta.</strong> Se retreinamos a mesma arquitetura do zero
+  com uma seed aleatória diferente, recuperamos as mesmas respostas? Se
+  sim, os achados do projeto são reprodutíveis. Se não, qualquer
+  resultado de seed única é anedótico e deve ser reportado como
+  consenso.
+</div>
+
+<h2>1. Variância de desempenho</h2>
+<p>
+  Cinco seeds, arquitetura e dados idênticos, inicializações diferentes:
+</p>
+<ul>
+  <li><strong>Acurácia no teste:</strong> 78,38% ± 5,67%
+      (faixa 71,62–85,14%, semilargura do IC 95%
+      ≈ 4,97%).</li>
+</ul>
+<img src="stability_accuracy.png"
+     alt="Acurácia por seed e F1 por classe">
+
+<h2>2. Estabilidade do ranking de atenção</h2>
+<p>
+  Calculamos o vetor de importância de nó por classe (1000 genes) de cada
+  seed e perguntamos: as seeds ordenam os genes na mesma ordem?
+</p>
+<ul>
+  <li><strong>ρ de Spearman</strong> compara rankings completos (1,0 = ordem
+    idêntica, 0,0 = sem relação).</li>
+  <li><strong>Jaccard top-50</strong> compara quais 50 genes cada seed
+    marcou como mais importantes (1,0 = mesmo conjunto, 0,0 = sem
+    interseção).</li>
+</ul>
+<table>
+<tr><th>ranking</th><th>ρ de Spearman</th><th>Jaccard top-50</th></tr>
+<tr><td>Tumor Primário</td><td>nan ± nan</td><td>0,327 ± 0,112</td></tr><tr><td>Metástase</td><td>0,008 ± 0,117</td><td>0,355 ± 0,043</td></tr><tr><td>Nevo Benigno</td><td>-0,028 ± 0,143</td><td>0,294 ± 0,086</td></tr><tr><td>Tumor − Normal</td><td>-0,041 ± 0,095</td><td>0,310 ± 0,059</td></tr><tr><td>Metástase − Primário</td><td>0,137 ± 0,092</td><td>0,377 ± 0,068</td></tr>
+</table>
+<img src="stability_spearman.png"
+     alt="Heatmap de Spearman entre seeds por ranking">
+
+<div class="callout">
+  <strong>Guia de leitura.</strong>
+  ρ ≥ 0,8 significa rankings altamente estáveis — resultados top-K de uma
+  única seed são defensáveis. 0,5–0,8 significa moderadamente estáveis;
+  reporte rankings <em>de consenso</em> (rank médio entre seeds) em vez
+  do de uma única seed. Abaixo de 0,5, os rankings se embaralham entre
+  seeds e as conclusões precisam ser moderadas.
+  <br><br>
+  Rankings de diferença (ex.: <em>Metástase − Primário</em>) são
+  intrinsecamente mais ruidosos que os por classe — o ruído compõe ao
+  subtrair duas estimativas — então espere números menores aí. O arquivo
+  <code>stability_consensus_top20.csv</code> ao lado desta página lista
+  os 20 genes mais bem ranqueados por rank médio entre seeds, com o
+  desvio-padrão do rank de cada gene — essa é a lista publicável.
+</div>
+
+<h2>2. Geometria dos embeddings entre seeds</h2>
+<p>
+  Mesmo quando duas seeds aprendem espaços 64-dimensionais ligeiramente
+  diferentes, a questão é se o <em>formato</em> da nuvem é o mesmo —
+  cada amostra cai perto dos mesmos vizinhos independentemente da seed?
+</p>
+<ul>
+  <li><strong>Jaccard kNN (k=10):</strong>
+      0,621 ± 0,154
+      entre pares de seeds em 74 amostras presentes na divisão de teste de
+      todas as seeds. <em>1,0 = vizinhanças idênticas, 0,0 = sem
+      interseção.</em></li>
+  <li><strong>Disparidade de Procrustes:</strong>
+      0,0743 (0 = idênticos a menos de rotação/escala).</li>
+</ul>
+<img src="stability_knn_jaccard.png"
+     alt="Jaccard kNN por amostra entre seeds, por classe">
+
+
+<h2>3. Estabilidade do pseudotempo</h2>
+<p>
+  Cada seed produz seu próprio eixo de pseudotempo Normal → Metástase.
+  Alinhamos a direção entre seeds (invertendo se houver anticorrelação) e
+  observamos quanto o pseudotempo de cada amostra varia entre as seeds.
+  Barras de erro estreitas indicam que o modelo concorda sobre onde a
+  amostra está no eixo de progressão; barras largas indicam amostras
+  ambíguas.
+</p>
+<ul>
+  <li><strong>σ por amostra:</strong> média = 0,028,
+      mediana = 0,026, máximo = 0,086
+      (em um eixo 0–1).</li>
+</ul>
+<img src="stability_pseudotime.png"
+     alt="Pseudotempo por amostra entre seeds">
+
+
+<h2>O que isso significa</h2>
+<p>
+  Reprodutibilidade não é checagem extra — é a diferença entre uma anedota
+  e um achado. Um modelo que chega aos mesmos rankings de genes, à mesma
+  estrutura de vizinhança e à mesma posição de progressão por amostra
+  independentemente da inicialização é um cujas conclusões podem ser
+  citadas. Os números acima dizem, por dimensão da análise, exatamente
+  quanto peso cada achado carrega.
+</p>
+
+</div>
+</body></html>

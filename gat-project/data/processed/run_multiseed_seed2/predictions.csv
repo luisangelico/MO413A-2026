@@ -1,0 +1,194 @@
+patient_id,true_label,predicted_label,confidence,correct,split
+GTEX-RVPU-0008-SM-3NM8B,Normal Tissue,Normal Tissue,0.8214154839515686,True,test
+GTEX-ZAJG-0126-SM-5HL94,Normal Tissue,Normal Tissue,0.9992899894714355,True,test
+GTEX-13VXU-0626-SM-5L3F9,Normal Tissue,Normal Tissue,0.984970211982727,True,test
+GTEX-PSDG-0008-SM-48TE5,Normal Tissue,Normal Tissue,0.987427830696106,True,test
+GTEX-ZE9C-2526-SM-5IJDR,Normal Tissue,Normal Tissue,0.9596812129020691,True,test
+GTEX-X5EB-0008-SM-46MU3,Normal Tissue,Normal Tissue,0.9880240559577942,True,test
+GTEX-WEY5-0008-SM-4LMKC,Normal Tissue,Normal Tissue,0.99178546667099,True,test
+GTEX-Z93S-0008-SM-4RGM5,Normal Tissue,Normal Tissue,0.8980346322059631,True,test
+GTEX-12WSB-2926-SM-59HKL,Normal Tissue,Normal Tissue,0.9496066570281982,True,test
+TCGA-D3-A8GR-06,Metastasis,Metastasis,0.7919307947158813,True,test
+GTEX-WFG7-0008-SM-4LMKB,Normal Tissue,Normal Tissue,0.9983635544776917,True,test
+TCGA-EB-A1NK-01,Primary Tumor,Primary Tumor,0.7674813270568848,True,test
+GTEX-UJMC-0008-SM-4IHKK,Normal Tissue,Normal Tissue,0.9666256904602051,True,test
+GTEX-Y5LM-1926-SM-5RQJH,Normal Tissue,Normal Tissue,0.99924635887146,True,test
+GTEX-1399S-0126-SM-5IJCF,Normal Tissue,Normal Tissue,0.9987854361534119,True,test
+GTEX-Y9LG-0008-SM-4VBRJ,Normal Tissue,Normal Tissue,0.8352948427200317,True,test
+GTEX-T5JC-0426-SM-32PLO,Normal Tissue,Normal Tissue,0.9907442927360535,True,test
+GTEX-XK95-0226-SM-4AT58,Normal Tissue,Normal Tissue,0.9882678389549255,True,test
+GTEX-XUW1-0926-SM-4BONX,Normal Tissue,Normal Tissue,0.9953351616859436,True,test
+TCGA-EE-A29B-06,Metastasis,Metastasis,0.755047619342804,True,test
+GTEX-X62O-0126-SM-4E3JN,Normal Tissue,Normal Tissue,0.9955741167068481,True,test
+TCGA-YG-AA3P-06,Metastasis,Metastasis,0.8376438021659851,True,test
+GTEX-T6MO-1626-SM-32QOM,Normal Tissue,Normal Tissue,0.999464213848114,True,test
+GTEX-YECK-0326-SM-4W1YS,Normal Tissue,Normal Tissue,0.8487193584442139,True,test
+GTEX-ZF29-0926-SM-4WKFZ,Normal Tissue,Normal Tissue,0.9947807192802429,True,test
+TCGA-D3-A2JN-06,Metastasis,Metastasis,0.854552149772644,True,test
+TCGA-ER-A19N-06,Metastasis,Metastasis,0.5329306721687317,True,test
+TCGA-GN-A262-06,Metastasis,Metastasis,0.8545933365821838,True,test
+GTEX-ZXG5-2126-SM-59HKD,Normal Tissue,Normal Tissue,0.9959539175033569,True,test
+GTEX-RTLS-0008-SM-48FET,Normal Tissue,Normal Tissue,0.9856584668159485,True,test
+GTEX-111VG-0008-SM-5Q5BG,Normal Tissue,Normal Tissue,0.9889004230499268,True,test
+GTEX-145LS-0126-SM-5QGP1,Normal Tissue,Normal Tissue,0.9971809387207031,True,test
+GTEX-XQ8I-0926-SM-4BOOF,Normal Tissue,Normal Tissue,0.9982877373695374,True,test
+GTEX-OHPM-0008-SM-4E3IP,Normal Tissue,Normal Tissue,0.7333149909973145,True,test
+GTEX-ZWKS-0626-SM-5GIDV,Normal Tissue,Normal Tissue,0.9944601058959961,True,test
+TCGA-D3-A5GN-06,Metastasis,Metastasis,0.9683903455734253,True,test
+GTEX-11NUK-2726-SM-5A5MC,Normal Tissue,Normal Tissue,0.9867998361587524,True,test
+GTEX-ZU9S-1826-SM-5NQ9E,Normal Tissue,Normal Tissue,0.9872384071350098,True,test
+TCGA-EE-A29L-06,Metastasis,Metastasis,0.6333644390106201,True,test
+TCGA-D9-A6EG-06,Metastasis,Metastasis,0.6583299040794373,True,test
+TCGA-WE-AAA0-06,Metastasis,Metastasis,0.9283349514007568,True,test
+GTEX-Z93S-1626-SM-5CVMB,Normal Tissue,Normal Tissue,0.9766030311584473,True,test
+GTEX-ZE7O-0126-SM-57WC1,Normal Tissue,Normal Tissue,0.9943196773529053,True,test
+TCGA-D9-A148-06,Metastasis,Metastasis,0.8978247046470642,True,test
+GTEX-133LE-2326-SM-5K7W3,Normal Tissue,Normal Tissue,0.9931507110595703,True,test
+TCGA-ER-A2NG-06,Metastasis,Metastasis,0.45898693799972534,True,test
+GTEX-R55F-0008-SM-48FE6,Normal Tissue,Normal Tissue,0.5678752660751343,True,test
+TCGA-BF-A5EP-01,Primary Tumor,Metastasis,0.7543162703514099,False,test
+GTEX-ZY6K-1826-SM-5GZXK,Normal Tissue,Normal Tissue,0.9648689031600952,True,test
+TCGA-WE-A8ZN-06,Metastasis,Metastasis,0.8400090932846069,True,test
+GTEX-Y8E4-0008-SM-4V6FW,Normal Tissue,Normal Tissue,0.8740461468696594,True,test
+GTEX-147F4-0226-SM-5QGPW,Normal Tissue,Normal Tissue,0.9985857009887695,True,test
+GTEX-ZPIC-0008-SM-4E3JF,Normal Tissue,Normal Tissue,0.9785953164100647,True,test
+GTEX-11EQ9-2426-SM-5HL5T,Normal Tissue,Normal Tissue,0.9995114803314209,True,test
+GTEX-T5JW-0008-SM-4DM5X,Normal Tissue,Normal Tissue,0.9808332920074463,True,test
+TCGA-D3-A3MR-06,Metastasis,Metastasis,0.9755968451499939,True,test
+GTEX-139T4-0008-SM-5S2WF,Normal Tissue,Metastasis,0.5790001153945923,False,test
+GTEX-11ZUS-2626-SM-5FQUR,Normal Tissue,Normal Tissue,0.992090106010437,True,test
+TCGA-WE-AA9Y-06,Metastasis,Metastasis,0.9560298323631287,True,test
+GTEX-TMZS-0126-SM-3DB9Q,Normal Tissue,Normal Tissue,0.9987614154815674,True,test
+TCGA-GN-A264-06,Metastasis,Metastasis,0.7010635137557983,True,test
+GTEX-11H98-0126-SM-5EGHG,Normal Tissue,Normal Tissue,0.9706653356552124,True,test
+TCGA-EB-A57M-01,Primary Tumor,Primary Tumor,0.5025655031204224,True,test
+TCGA-EB-A41A-01,Primary Tumor,Primary Tumor,0.8743029236793518,True,test
+GTEX-W5WG-0008-SM-4KL25,Normal Tissue,Normal Tissue,0.9775615334510803,True,test
+GTEX-ZE9C-2726-SM-57WB5,Normal Tissue,Normal Tissue,0.9733573794364929,True,test
+GTEX-131XH-2226-SM-5DUXJ,Normal Tissue,Normal Tissue,0.9889561533927917,True,test
+TCGA-D3-A8GQ-06,Metastasis,Metastasis,0.8940964937210083,True,test
+TCGA-FW-A3TU-06,Metastasis,Metastasis,0.9512071013450623,True,test
+TCGA-EB-A51B-01,Primary Tumor,Primary Tumor,0.8862067461013794,True,test
+GTEX-WH7G-0008-SM-4LVNM,Normal Tissue,Normal Tissue,0.9851120114326477,True,test
+GTEX-13CF3-2426-SM-5IFGX,Normal Tissue,Normal Tissue,0.9969817996025085,True,test
+GTEX-QVJO-0008-SM-447AU,Normal Tissue,Normal Tissue,0.9909893870353699,True,test
+TCGA-FS-A1ZA-06,Metastasis,Metastasis,0.640455961227417,True,test
+TCGA-DA-A1IC-06,Metastasis,Primary Tumor,0.6750145554542542,False,test
+GTEX-X3Y1-0008-SM-4PR12,Normal Tissue,Normal Tissue,0.9888913631439209,True,test
+TCGA-RP-A695-06,Metastasis,Metastasis,0.9300941824913025,True,test
+TCGA-FR-A3YO-06,Metastasis,Metastasis,0.8469882607460022,True,test
+GTEX-X4EP-0626-SM-3P621,Normal Tissue,Normal Tissue,0.9569680690765381,True,test
+TCGA-ER-A19O-06,Metastasis,Metastasis,0.9356497526168823,True,test
+TCGA-D3-A3CC-06,Metastasis,Primary Tumor,0.7659560441970825,False,test
+GTEX-ZVP2-0326-SM-57WBP,Normal Tissue,Normal Tissue,0.9975308775901794,True,test
+GTEX-ZQG8-0008-SM-4YCE7,Normal Tissue,Normal Tissue,0.995556652545929,True,test
+GTEX-WFON-1926-SM-3LK7L,Normal Tissue,Normal Tissue,0.9651917815208435,True,test
+TCGA-EB-A97M-01,Primary Tumor,Metastasis,0.9074398279190063,False,test
+GTEX-XUW1-0008-SM-4BOQH,Normal Tissue,Normal Tissue,0.9201204776763916,True,test
+TCGA-ER-A197-06,Metastasis,Primary Tumor,0.5782371759414673,False,test
+GTEX-WI4N-2726-SM-3LK7Y,Normal Tissue,Normal Tissue,0.9935780763626099,True,test
+GTEX-XOTO-0726-SM-4B659,Normal Tissue,Normal Tissue,0.9963072538375854,True,test
+GTEX-139T8-0626-SM-5KLZX,Normal Tissue,Normal Tissue,0.9978210926055908,True,test
+GTEX-12BJ1-0926-SM-5EQ62,Normal Tissue,Normal Tissue,0.9667761921882629,True,test
+TCGA-GN-A26C-01,Primary Tumor,Metastasis,0.9701988697052002,False,test
+GTEX-11DZ1-0126-SM-5985Q,Normal Tissue,Normal Tissue,0.9938271641731262,True,test
+GTEX-ZDTT-0426-SM-4WKFL,Normal Tissue,Normal Tissue,0.9494163393974304,True,test
+GTEX-R55D-0008-SM-48FEV,Normal Tissue,Normal Tissue,0.9642847180366516,True,test
+TCGA-D9-A4Z5-01,Primary Tumor,Metastasis,0.7001368403434753,False,test
+TCGA-EB-A3Y7-01,Primary Tumor,Primary Tumor,0.8016397356987,True,test
+TCGA-EE-A2M6-06,Metastasis,Metastasis,0.9408823847770691,True,test
+GTEX-1497J-0226-SM-5QGPU,Normal Tissue,Normal Tissue,0.9997109770774841,True,test
+TCGA-D9-A3Z3-06,Metastasis,Metastasis,0.9692437648773193,True,test
+TCGA-BF-A3DJ-01,Primary Tumor,Primary Tumor,0.8223652839660645,True,test
+TCGA-BF-A5ES-01,Primary Tumor,Metastasis,0.8646491169929504,False,test
+TCGA-EE-A184-06,Metastasis,Metastasis,0.7422497272491455,True,test
+GTEX-12WSJ-1126-SM-5LZVJ,Normal Tissue,Normal Tissue,0.9960836172103882,True,test
+TCGA-D3-A3MV-06,Metastasis,Metastasis,0.7778221368789673,True,test
+GTEX-WWYW-0008-SM-4MVPF,Normal Tissue,Normal Tissue,0.8579846620559692,True,test
+TCGA-DA-A1I2-06,Metastasis,Metastasis,0.9370269179344177,True,test
+GTEX-ZVP2-0008-SM-51MSL,Normal Tissue,Normal Tissue,0.95975661277771,True,test
+GTEX-139D8-0226-SM-5KLZO,Normal Tissue,Normal Tissue,0.9899207353591919,True,test
+GTEX-W5X1-2526-SM-3GILC,Normal Tissue,Normal Tissue,0.998392641544342,True,test
+GTEX-ZYFD-0626-SM-5E44E,Normal Tissue,Normal Tissue,0.8192739486694336,True,test
+GTEX-ZV7C-0926-SM-59HL1,Normal Tissue,Normal Tissue,0.7277511358261108,True,test
+GTEX-X4EO-0326-SM-3P5YO,Normal Tissue,Normal Tissue,0.905423641204834,True,test
+GTEX-11DXX-0008-SM-5Q5B8,Normal Tissue,Normal Tissue,0.9913514852523804,True,test
+TCGA-XV-AB01-06,Metastasis,Metastasis,0.9582331776618958,True,test
+TCGA-EE-A20F-06,Metastasis,Metastasis,0.9523380994796753,True,test
+GTEX-OOBK-0008-SM-3NB27,Normal Tissue,Normal Tissue,0.9282928109169006,True,test
+GTEX-12ZZY-0226-SM-5LZVE,Normal Tissue,Normal Tissue,0.8783857226371765,True,test
+TCGA-WE-A8ZM-06,Metastasis,Metastasis,0.7919089198112488,True,test
+GTEX-WRHU-0008-SM-4MVPB,Normal Tissue,Normal Tissue,0.7820020318031311,True,test
+TCGA-D3-A1Q7-06,Metastasis,Metastasis,0.9182891249656677,True,test
+GTEX-T2YK-0008-SM-4DM6M,Normal Tissue,Normal Tissue,0.995918333530426,True,test
+TCGA-EB-A3HV-01,Primary Tumor,Normal Tissue,0.5800184011459351,False,test
+GTEX-WHSE-0008-SM-4M1ZO,Normal Tissue,Normal Tissue,0.9972620010375977,True,test
+TCGA-EE-A2A6-06,Metastasis,Metastasis,0.9187503457069397,True,test
+TCGA-EE-A3AG-06,Metastasis,Metastasis,0.5225579142570496,True,test
+TCGA-D3-A51G-06,Metastasis,Metastasis,0.8277589082717896,True,test
+GTEX-VUSG-0008-SM-4KL24,Normal Tissue,Normal Tissue,0.8164038062095642,True,test
+GTEX-Y8LW-1526-SM-5IFHL,Normal Tissue,Normal Tissue,0.9971559047698975,True,test
+GTEX-Y3IK-1626-SM-4YCF5,Normal Tissue,Normal Tissue,0.9983312487602234,True,test
+TCGA-IH-A3EA-01,Primary Tumor,Metastasis,0.8250135183334351,False,test
+GTEX-12696-0126-SM-5EQ4L,Normal Tissue,Normal Tissue,0.9878082871437073,True,test
+GTEX-XPVG-2126-SM-4B667,Normal Tissue,Normal Tissue,0.9762641191482544,True,test
+TCGA-EE-A2MS-06,Metastasis,Metastasis,0.8894354104995728,True,test
+TCGA-EE-A2M8-06,Metastasis,Metastasis,0.933174729347229,True,test
+GTEX-XAJ8-1426-SM-47JYM,Normal Tissue,Normal Tissue,0.9773926138877869,True,test
+GTEX-ZLV1-1526-SM-4WWBC,Normal Tissue,Normal Tissue,0.9978476762771606,True,test
+GTEX-WZTO-0126-SM-3NM95,Normal Tissue,Normal Tissue,0.7635237574577332,True,test
+GTEX-XUZC-0008-SM-4BOQG,Normal Tissue,Normal Tissue,0.989697277545929,True,test
+GTEX-12WSB-0126-SM-59HJN,Normal Tissue,Normal Tissue,0.9526168704032898,True,test
+GTEX-ZTTD-2826-SM-4YCFA,Normal Tissue,Normal Tissue,0.6659883260726929,True,test
+GTEX-WI4N-1026-SM-3LK7N,Normal Tissue,Normal Tissue,0.9969502091407776,True,test
+TCGA-YD-A9TA-06,Metastasis,Metastasis,0.9689478874206543,True,test
+TCGA-FS-A4FB-06,Metastasis,Primary Tumor,0.4236907660961151,False,test
+TCGA-D3-A51R-06,Metastasis,Metastasis,0.7978388071060181,True,test
+GTEX-TML8-1926-SM-32QOS,Normal Tissue,Normal Tissue,0.9988049268722534,True,test
+TCGA-FS-A1ZQ-06,Metastasis,Metastasis,0.8391831517219543,True,test
+TCGA-FS-A1ZY-06,Metastasis,Metastasis,0.7243179082870483,True,test
+GTEX-XBEC-0726-SM-4QARZ,Normal Tissue,Normal Tissue,0.985916793346405,True,test
+GTEX-14A6H-0126-SM-5QGPK,Normal Tissue,Normal Tissue,0.9975767731666565,True,test
+TCGA-D3-A8GO-06,Metastasis,Metastasis,0.9537400007247925,True,test
+GTEX-11ZU8-0126-SM-5EQ58,Normal Tissue,Normal Tissue,0.9982307553291321,True,test
+GTEX-11OF3-0126-SM-5PNYF,Normal Tissue,Normal Tissue,0.9979497790336609,True,test
+GTEX-13PVQ-0126-SM-5SIB4,Normal Tissue,Normal Tissue,0.9824010729789734,True,test
+TCGA-FW-A3R5-06,Metastasis,Metastasis,0.9212601780891418,True,test
+TCGA-BF-A3DM-01,Primary Tumor,Metastasis,0.7768587470054626,False,test
+GTEX-WXYG-0008-SM-4ONDU,Normal Tissue,Normal Tissue,0.9931885004043579,True,test
+TCGA-ER-A2NC-06,Metastasis,Metastasis,0.9335403442382812,True,test
+GTEX-S341-0008-SM-4AD6D,Normal Tissue,Normal Tissue,0.9930383563041687,True,test
+GTEX-WH7G-2026-SM-3NMBL,Normal Tissue,Normal Tissue,0.9054246544837952,True,test
+TCGA-D9-A3Z4-01,Primary Tumor,Metastasis,0.9139364957809448,False,test
+GTEX-X5EB-2226-SM-46MW4,Normal Tissue,Normal Tissue,0.9910981059074402,True,test
+GTEX-Y5V6-2326-SM-4VDSA,Normal Tissue,Normal Tissue,0.9966384172439575,True,test
+GTEX-X4EO-2926-SM-4E3JH,Normal Tissue,Normal Tissue,0.9858679175376892,True,test
+GTEX-UJHI-0008-SM-4IHL1,Normal Tissue,Normal Tissue,0.957571268081665,True,test
+GTEX-XBEW-0008-SM-4AT3Y,Normal Tissue,Normal Tissue,0.9362400770187378,True,test
+GTEX-WHPG-2626-SM-3NMBR,Normal Tissue,Normal Tissue,0.9691432118415833,True,test
+GTEX-13113-1926-SM-5LZWG,Normal Tissue,Normal Tissue,0.9959298968315125,True,test
+GTEX-WYBS-0008-SM-4ONDX,Normal Tissue,Normal Tissue,0.6320446133613586,True,test
+GTEX-145ME-1826-SM-5SI9G,Normal Tissue,Normal Tissue,0.9767372012138367,True,test
+GTEX-139TU-0726-SM-5L3EK,Normal Tissue,Normal Tissue,0.9703777432441711,True,test
+GTEX-ZVT3-0008-SM-51MRI,Normal Tissue,Normal Tissue,0.8175863027572632,True,test
+TCGA-D3-A8GK-06,Metastasis,Metastasis,0.8391625881195068,True,test
+GTEX-12WS9-0126-SM-5EGL7,Normal Tissue,Normal Tissue,0.9779534339904785,True,test
+TCGA-GN-A9SD-06,Metastasis,Metastasis,0.969717800617218,True,test
+TCGA-YG-AA3O-06,Metastasis,Metastasis,0.8876509666442871,True,test
+GTEX-111CU-1926-SM-5GZYZ,Normal Tissue,Normal Tissue,0.9921739101409912,True,test
+GTEX-12ZZX-0126-SM-5EGK9,Normal Tissue,Normal Tissue,0.9833483099937439,True,test
+TCGA-DA-A95V-06,Metastasis,Metastasis,0.966241717338562,True,test
+GTEX-1313W-0626-SM-5EQ4H,Normal Tissue,Normal Tissue,0.9972208738327026,True,test
+GTEX-146FR-1326-SM-5SIAJ,Normal Tissue,Normal Tissue,0.9258486032485962,True,test
+TCGA-EE-A29X-06,Metastasis,Metastasis,0.9451941847801208,True,test
+GTEX-W5X1-0008-SM-4LMKA,Normal Tissue,Normal Tissue,0.9773740768432617,True,test
+GTEX-ZVT2-0126-SM-5GIDQ,Normal Tissue,Normal Tissue,0.9904468059539795,True,test
+TCGA-DA-A1I0-06,Metastasis,Metastasis,0.9027016758918762,True,test
+GTEX-WCDI-0008-SM-47JYE,Normal Tissue,Normal Tissue,0.5627164840698242,True,test
+GTEX-QCQG-1726-SM-3GIJ9,Normal Tissue,Normal Tissue,0.9970651268959045,True,test
+GTEX-WVJS-0008-SM-4MVPC,Normal Tissue,Normal Tissue,0.8031126260757446,True,test
+GTEX-P4QS-0008-SM-48TDY,Normal Tissue,Normal Tissue,0.9930680990219116,True,test
+TCGA-FS-A1ZZ-06,Metastasis,Metastasis,0.475956529378891,True,test
+GTEX-ZUA1-2626-SM-5NQ92,Normal Tissue,Normal Tissue,0.741195023059845,True,test
+TCGA-EE-A2GK-06,Metastasis,Metastasis,0.9090726375579834,True,test
+TCGA-ER-A42H-01,Primary Tumor,Metastasis,0.8309804201126099,False,test

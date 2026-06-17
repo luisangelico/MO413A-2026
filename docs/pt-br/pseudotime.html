@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Pseudotempo — Análise de Câncer de Pele em Redes Gênicas</title>
+<style>
+
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
+}
+
+  body { font-family:-apple-system,system-ui,sans-serif; margin:0;
+          color:#222; line-height:1.6; }
+  .page { max-width:900px; margin:0 auto; padding:0 1em 2em; }
+  h1 { font-size:1.5em; margin-top:0.4em; } h2 { font-size:1.1em; margin-top:1.6em; }
+  .meta { color:#666; font-size:0.9em; }
+  img { width:100%; max-width:880px; border:1px solid #eee; border-radius:6px;
+         margin:0.6em 0; }
+  .callout { background:#fffbf2; border-left:3px solid #e0a020;
+              padding:0.7em 1em; margin:1em 0; }
+  .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
+            padding:0.7em 1em; margin:1em 0; }
+  table { border-collapse:collapse; font-size:0.9em; margin:0.6em 0; }
+  th,td { padding:0.35em 0.7em; border-bottom:1px solid #eee; text-align:right; }
+  th { background:#f4f4f4; }
+  .legend { display:flex; gap:1em; flex-wrap:wrap; font-size:0.9em; margin:0.5em 0; }
+  .swatch { display:inline-block; width:12px; height:12px; border-radius:3px;
+            margin-right:0.3em; vertical-align:middle; border:1px solid #999; }
+</style></head><body>
+<header class="site-header">
+  <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="../pt-br/pseudotime.html" title="PT">PT</a><a href="../pseudotime.html" title="Switch to EN">EN</a></div>
+    <h1 class="site-title">Análise de Câncer de Pele em Redes Gênicas</h1>
+    <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
+    <nav class="site-nav">
+    <a href="../pt-br/index.html">Predições</a>
+    <a href="../pt-br/exploration.html">Exploração</a>
+    <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
+    <a href="../pt-br/dataset.html">Base de dados</a>
+    <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
+    <a href="../pt-br/embeddings.html">Embeddings</a>
+    <a href="../pt-br/pseudotime.html" class="active">Pseudotempo</a>
+    <a href="../pt-br/stability.html">Estabilidade</a>
+    <a href="../pt-br/biomarkers.html">Biomarcadores</a>
+    </nav>
+  </div>
+</header>
+<div class="page">
+
+<h1>Pseudotempo — como o foco do modelo muda de pele saudável para metástase</h1>
+<p class="meta">Execução: <code>run_multiseed_seed1</code></p>
+
+<div class="plain">
+  <strong>Em uma frase.</strong> Ordenamos toda amostra ao longo de um eixo
+  de "grau de tumor" e observamos em quais genes o modelo se apoia em cada
+  passo. Genes cuja importância cresce conforme as amostras ficam mais
+  parecidas com tumor são candidatos a sinais de progressão de melanoma —
+  <em>como vistos pelo modelo</em>.
+</div>
+
+<h2>O que é um "embedding"?</h2>
+<p>
+  Dentro da rede treinada, cada amostra é resumida em uma lista de ~64
+  números — seu <strong>embedding</strong>. Pense nele como a impressão
+  digital da amostra para o modelo: embeddings parecidos = amostras que o
+  modelo considera parecidas. Não olhamos para essa impressão digital
+  durante a predição; a rede só a usa para decidir uma classe. Mas
+  <em>podemos</em> olhá-la, e é daí que parte esta análise.
+</p>
+
+<h2>O que é "pseudotempo" aqui?</h2>
+<p>
+  Calculamos duas âncoras no espaço de embeddings: o embedding médio das
+  amostras de pele Normal (a "âncora normal") e o embedding médio das
+  amostras de Metástase (a "âncora de metástase"). Em seguida, desenhamos
+  uma reta imaginária entre as duas e projetamos toda amostra sobre essa
+  reta. Cada amostra recebe um número entre 0 e 1:
+</p>
+<ul>
+  <li><strong>0</strong> = embedding na âncora de pele normal</li>
+  <li><strong>1</strong> = embedding na âncora de metástase</li>
+  <li>valores intermediários = "em algum ponto do caminho"</li>
+</ul>
+<p>
+  Dividimos esse eixo 0→1 em <strong>10 bins de largura igual</strong>
+  (decis) e, para cada bin, calculamos a média dos escores de atenção do
+  modelo entre todas as amostras que caíram nele. O resultado é um retrato
+  de <em>quais genes o modelo foca em cada passo ao longo do eixo Normal
+  → Metástase</em>.
+</p>
+
+<div class="callout">
+  <strong>Ressalva honesta.</strong> Amostras do TCGA não formam uma série
+  temporal — não há paciente acompanhado ao longo de anos. "Pseudotempo"
+  aqui é uma <em>ordenação da coorte</em> construída a partir de como o
+  modelo treinado vê os dados. Descreve a visão do modelo, não a biologia
+  de um tumor específico evoluindo. Genes cuja atenção sobe ao longo
+  deste eixo são <em>hipóteses</em> de marcadores de progressão, não
+  confirmações.
+</div>
+
+<h2>Composição de cada decil de pseudotempo</h2>
+<p>
+  Checagem de sanidade: os bins iniciais devem ser principalmente amostras
+  Normais, os bins finais principalmente Metástase. Se forem, o eixo está
+  fazendo o esperado. (Tumores primários normalmente ficam no meio.)
+</p>
+<table>
+<tr><th>decil</th><th>Normal</th><th>Primário</th><th>Metástase</th><th>total</th></tr>
+<tr><td>1</td><td>9</td><td>0</td><td>0</td><td>9</td></tr><tr><td>2</td><td>9</td><td>0</td><td>0</td><td>9</td></tr><tr><td>3</td><td>2</td><td>4</td><td>2</td><td>8</td></tr><tr><td>4</td><td>0</td><td>4</td><td>28</td><td>32</td></tr><tr><td>5</td><td>0</td><td>12</td><td>89</td><td>101</td></tr><tr><td>6</td><td>0</td><td>10</td><td>76</td><td>86</td></tr><tr><td>7</td><td>0</td><td>4</td><td>88</td><td>92</td></tr><tr><td>8</td><td>0</td><td>0</td><td>47</td><td>47</td></tr><tr><td>9</td><td>0</td><td>1</td><td>14</td><td>15</td></tr><tr><td>10</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+</table>
+
+<h2>Heatmap: atenção dos genes ao longo do pseudotempo</h2>
+<p>
+  Linhas = genes cuja atenção mais varia ao longo do eixo. Colunas = os 10
+  decis de pseudotempo, ordenados de Normal-like → Metástase-like.
+  Cada linha é normalizada pelo próprio pico (claro = "a atenção deste
+  gene atinge o pico <em>aqui</em>"). As linhas estão reordenadas de modo
+  que genes cujo pico ocorre cedo aparecem no topo, e os de pico tardio
+  embaixo.
+</p>
+<p>
+  Como ler a figura: uma linha clara à esquerda e escura à direita
+  significa "o modelo prestou atenção neste gene principalmente em
+  amostras parecidas com normais, e deixou de se importar quando elas
+  ficaram mais parecidas com tumor". O padrão inverso aponta para o outro
+  lado.
+</p>
+<img src="pseudotime_heatmap.png"
+     alt="Heatmap de atenção média por decil">
+
+<h2>Trajetórias de genes selecionados</h2>
+<p>
+  Alguns genes representativos de cada categoria de referência, plotados
+  como atenção vs. decil de pseudotempo. Mesma informação do heatmap, mas
+  mais fácil de ler para um conjunto pequeno de genes.
+</p>
+<div class="legend">
+  <span><span class="swatch" style="background:#d62728"></span>linhagem melanocítica</span>
+  <span><span class="swatch" style="background:#ff7f0e"></span>progressão de melanoma</span>
+  <span><span class="swatch" style="background:#2ca02c"></span>infiltrado imune</span>
+  <span><span class="swatch" style="background:#1f77b4"></span>queratina / pele normal</span>
+</div>
+<img src="pseudotime_lines.png"
+     alt="Trajetórias de genes selecionados">
+
+<h2>Por que isso importa?</h2>
+<p>
+  Esta é a figura mais ambiciosa do projeto: ela amarra o
+  <em>embedding</em> (o resumo interno do modelo) e a <em>atenção</em>
+  (quais genes o modelo usa) em uma única narrativa de progressão. Se
+  genes de queratina e de pele-normal dominam os decis iniciais e
+  desaparecem nos finais, enquanto os de linhagem melanocítica e de
+  progressão de melanoma fazem o oposto, o modelo internalizou um quadro
+  coerente de como a pele transita para melanoma — puramente a partir de
+  expressão e topologia PPI, sem nenhum rótulo de progressão no
+  treinamento.
+</p>
+
+</div>
+</body></html>

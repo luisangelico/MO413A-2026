@@ -1,0 +1,74 @@
+{
+  "n_seeds": 5,
+  "test_accuracy": {
+    "mean": 0.7837837837837837,
+    "std": 0.05669237017135953,
+    "min": 0.7162162162162162,
+    "max": 0.8513513513513513,
+    "ci95_half_width": 0.049693053455426586,
+    "values": [
+      0.7162162162162162,
+      0.8513513513513513,
+      0.7432432432432432,
+      0.8513513513513513,
+      0.7567567567567568
+    ]
+  },
+  "per_class_f1": {
+    "Primary Tumor": {
+      "mean": 0.3994891443167305,
+      "std": 0.22219932061495304
+    },
+    "Metastasis": {
+      "mean": 0.8726945814151069,
+      "std": 0.040835383800548526
+    },
+    "Benign Nevus": {
+      "mean": 0.5688888888888888,
+      "std": 0.1205747552555603
+    }
+  },
+  "rankings": {
+    "Primary Tumor": {
+      "spearman_mean": NaN,
+      "spearman_std": NaN,
+      "top50_jaccard_mean": 0.3270925346803851,
+      "top50_jaccard_std": 0.11247398522275262
+    },
+    "Metastasis": {
+      "spearman_mean": 0.008173669202707824,
+      "spearman_std": 0.11683998271534499,
+      "top50_jaccard_mean": 0.3545167148627856,
+      "top50_jaccard_std": 0.04296704429321087
+    },
+    "Benign Nevus": {
+      "spearman_mean": -0.027598944325062713,
+      "spearman_std": 0.14252101546322127,
+      "top50_jaccard_mean": 0.2943165400901699,
+      "top50_jaccard_std": 0.08631824892161062
+    },
+    "Tumor - Normal": {
+      "spearman_mean": -0.041275564957549735,
+      "spearman_std": 0.09538293767785212,
+      "top50_jaccard_mean": 0.30978931358678197,
+      "top50_jaccard_std": 0.059331348908306304
+    },
+    "Metastasis - Primary": {
+      "spearman_mean": 0.13711844212549032,
+      "spearman_std": 0.09241448426546764,
+      "top50_jaccard_mean": 0.376779451723855,
+      "top50_jaccard_std": 0.06761207354597498
+    }
+  },
+  "embedding": {
+    "knn_jaccard_k10_mean": 0.6206917998326669,
+    "knn_jaccard_k10_std": 0.15420561690624376,
+    "procrustes_mean_disparity": 0.07434641395555788,
+    "n_common_samples": 74
+  },
+  "pseudotime": {
+    "mean_std": 0.027806433803333024,
+    "median_std": 0.026475339622940953,
+    "max_std": 0.08585619214853232
+  }
+}

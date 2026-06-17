@@ -1,0 +1,156 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 650px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+<div style="font-family:-apple-system,system-ui,sans-serif;max-width:900px;margin:1em auto;padding:0 1em;color:#222;line-height:1.55;">
+  <p style="margin:0 0 0.4em;"><a href="index.html" style="color:#1f77b4;text-decoration:none;">&larr; back to overview</a></p>
+  <h2 style="margin:0.2em 0;">Top-30 attended PPI subgraph — Primary Tumor</h2>
+  <p style="color:#555;font-size:0.95em;margin:0.4em 0;">
+    Genes the GAT attended to most when classifying <strong>Primary Tumor</strong> samples
+    in the held-out test split. Node size = attention importance.
+    Node color = Tumor − Normal differential attention
+    (<span style="color:#b40426;">red</span> = tumor-leaning,
+     <span style="color:#3b4cc0;">blue</span> = normal-leaning).
+    Edges are STRING physical PPIs. Drag nodes to explore; hover for details.
+  </p>
+  <p style="color:#666;font-size:0.88em;margin:0.4em 0;">
+    <strong>Attention score</strong> = sum of incoming softmax-normalized
+    edge-attention coefficients onto this gene, averaged over the 4 GAT heads,
+    summed over 3 layers, then averaged over correctly classified
+    <strong>Primary Tumor</strong> samples. Per-layer α(i→j) lies in [0, 1] and sums to 1
+    over j's incoming neighbors, so the final score is roughly in [0, ~3].
+    Only relative differences between genes matter — a gene at 0.04 attracted
+    ~4× the attention of one at 0.01.
+  </p>
+  <p style="color:#888;font-size:0.85em;margin:0.4em 0 0;">
+    <strong>Note on isolated nodes</strong> (9 of 20 here):
+    this is the <em>induced</em> subgraph over the top-30 attended genes only.
+    A gene appears isolated when its STRING PPI partners exist in the full
+    graph but were not themselves in the top-30 for this class — the model
+    attended to the gene, but its neighborhood was not uniformly attended.
+  </p>
+</div>
+
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97b8ff", "font": {"color": "#222"}, "id": 8, "label": "KRT6C", "shape": "dot", "size": 10.442127549912456, "title": "KRT6C\nattention score: 3.00\nTumor - Normal: -0.00\ngene set: other"}, {"color": "#f6bfa6", "font": {"color": "#222"}, "id": 395, "label": "CARD18", "shape": "dot", "size": 10.0, "title": "CARD18\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#f1cdba", "font": {"color": "#222"}, "id": 12, "label": "IGKV2D-40", "shape": "dot", "size": 13.439953166401835, "title": "IGKV2D-40\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#c5d6f2", "font": {"color": "#222"}, "id": 13, "label": "SPRR2A", "shape": "dot", "size": 13.82013711651107, "title": "SPRR2A\nattention score: 3.00\nTumor - Normal: -0.00\ngene set: other"}, {"color": "#f7af91", "font": {"color": "#222"}, "id": 788, "label": "FLRT3", "shape": "dot", "size": 20.949596681437505, "title": "FLRT3\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#f2cbb7", "font": {"color": "#222"}, "id": 31, "label": "LGALS7", "shape": "dot", "size": 11.957974005987094, "title": "LGALS7\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#92b4fe", "font": {"color": "#222"}, "id": 928, "label": "DEFB103B", "shape": "dot", "size": 25.619950372323036, "title": "DEFB103B\nattention score: 3.00\nTumor - Normal: -0.00\ngene set: other"}, {"color": "#c3d5f4", "font": {"color": "#222"}, "id": 680, "label": "LCE5A", "shape": "dot", "size": 22.89578909937846, "title": "LCE5A\nattention score: 3.00\nTumor - Normal: -0.00\ngene set: other"}, {"color": "#f08b6e", "font": {"color": "#222"}, "id": 809, "label": "TRIM71", "shape": "dot", "size": 26.042117910164475, "title": "TRIM71\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#f5a081", "font": {"color": "#222"}, "id": 426, "label": "POU3F3", "shape": "dot", "size": 15.721701669525682, "title": "POU3F3\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#f7a98b", "font": {"color": "#222"}, "id": 51, "label": "SPRR2D", "shape": "dot", "size": 35.0, "title": "SPRR2D\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#e4d9d2", "font": {"color": "#222"}, "id": 597, "label": "TGM3", "shape": "dot", "size": 10.41528752485694, "title": "TGM3\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#f4c5ad", "font": {"color": "#222"}, "id": 93, "label": "IGHV3-15", "shape": "dot", "size": 18.655378735737465, "title": "IGHV3-15\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#efcfbf", "font": {"color": "#222"}, "id": 865, "label": "NPTX2", "shape": "dot", "size": 11.140948614213823, "title": "NPTX2\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#f7af91", "font": {"color": "#222"}, "id": 103, "label": "CRCT1", "shape": "dot", "size": 18.33108467849337, "title": "CRCT1\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#dbdcde", "font": {"color": "#222"}, "id": 489, "label": "KRT79", "shape": "dot", "size": 10.952125696521204, "title": "KRT79\nattention score: 3.00\nTumor - Normal: -0.00\ngene set: other"}, {"color": "#d9dce1", "font": {"color": "#222"}, "id": 107, "label": "IGFL1", "shape": "dot", "size": 13.024151462945257, "title": "IGFL1\nattention score: 3.00\nTumor - Normal: -0.00\ngene set: other"}, {"color": "#f6bda2", "font": {"color": "#222"}, "id": 236, "label": "KRT27", "shape": "dot", "size": 17.76278670202441, "title": "KRT27\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}, {"color": "#ed8366", "font": {"color": "#222"}, "id": 120, "label": "LOR", "shape": "dot", "size": 14.113453258503892, "title": "LOR\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: keratin_skin_normal"}, {"color": "#f5c2aa", "font": {"color": "#222"}, "id": 378, "label": "ITLN2", "shape": "dot", "size": 13.795754483564004, "title": "ITLN2\nattention score: 3.00\nTumor - Normal: +0.00\ngene set: other"}]);
+                  edges = new vis.DataSet([{"color": "#cccccc", "from": 8, "to": 489, "width": 1}, {"color": "#cccccc", "from": 12, "to": 93, "width": 1}, {"color": "#cccccc", "from": 13, "to": 680, "width": 1}, {"color": "#cccccc", "from": 13, "to": 120, "width": 1}, {"color": "#cccccc", "from": 680, "to": 51, "width": 1}, {"color": "#cccccc", "from": 680, "to": 120, "width": 1}, {"color": "#cccccc", "from": 51, "to": 120, "width": 1}, {"color": "#cccccc", "from": 865, "to": 107, "width": 1}, {"color": "#cccccc", "from": 489, "to": 236, "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"barnesHut": {"gravitationalConstant": -8000, "springLength": 120}, "minVelocity": 0.5}, "interaction": {"hover": true, "tooltipDelay": 100}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

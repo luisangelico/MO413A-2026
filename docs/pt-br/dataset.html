@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Base de dados — Análise de Câncer de Pele em Redes Gênicas</title>
+<style>
+
+.site-header { background: linear-gradient(180deg, #1a2332 0%, #243047 100%);
+               color: white; padding: 1.1em 0 0.7em; margin: 0 0 1.4em 0;
+               border-bottom: 3px solid #1f77b4;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.site-header .inner { max-width: 1100px; margin: 0 auto; padding: 0 1.4em;
+                       position: relative; }
+.site-header h1.site-title { font-size: 1.25em; margin: 0; font-weight: 600;
+                  letter-spacing: 0.01em; color: white; line-height: 1.2; }
+.site-header .tagline { color: #94a3bd; font-size: 0.85em; margin: 0.2em 0 0; }
+.site-header .subtitle { color: #cdd6e3; font-size: 0.92em; margin-top: 0.5em; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.15em; margin-top: 0.85em; }
+.site-nav a { color: #cdd6e3; text-decoration: none; padding: 0.45em 0.85em;
+              border-radius: 5px; font-size: 0.88em;
+              transition: background 0.12s, color 0.12s; }
+.site-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+.site-nav a.active { background: #1f77b4; color: white; font-weight: 500; }
+.site-lang-switch { position: absolute; top: 0; right: 1.4em;
+                    display: flex; gap: 0.3em; align-items: center;
+                    font-size: 0.82em; }
+.site-lang-switch a { color: #cdd6e3; text-decoration: none;
+                      padding: 0.25em 0.65em; border-radius: 999px;
+                      border: 1px solid rgba(255,255,255,0.18);
+                      transition: background 0.12s, color 0.12s; }
+.site-lang-switch a:hover { background: rgba(255,255,255,0.12); color: white; }
+.site-lang-switch .current { color: white;
+                              background: rgba(255,255,255,0.12);
+                              border-color: rgba(255,255,255,0.3); }
+@media (max-width: 700px) {
+  .site-header h1.site-title { font-size: 1.1em; }
+  .site-nav a { padding: 0.35em 0.7em; font-size: 0.82em; }
+  .site-lang-switch { position: static; margin-top: 0.6em; }
+}
+
+  body { font-family:-apple-system,system-ui,sans-serif; margin:0; color:#222;
+          line-height:1.6; }
+  .page { max-width:920px; margin:0 auto; padding:0 1em 2em; }
+  h1 { font-size:1.5em; margin-top:0.4em; } h2 { font-size:1.15em; margin-top:1.6em; }
+  .meta { color:#666; font-size:0.9em; }
+  .plain { background:#f6fbf7; border-left:3px solid #2ca02c;
+            padding:0.7em 1em; margin:1em 0; }
+  .callout { background:#fffbf2; border-left:3px solid #e0a020;
+              padding:0.7em 1em; margin:1em 0; }
+  table { border-collapse:collapse; font-size:0.92em; margin:0.6em 0; }
+  th,td { padding:0.4em 0.7em; border-bottom:1px solid #eee; text-align:left; }
+  th { background:#f4f4f4; }
+  img { width:100%; max-width:880px; border:1px solid #eee;
+         border-radius:6px; margin:0.6em 0; }
+  code { background:#f4f4f4; padding:0 0.3em; border-radius:3px; }
+  ul { line-height:1.8; }
+  .sources { display:grid; grid-template-columns:1fr 1fr; gap:1em; }
+  @media (max-width:760px) { .sources { grid-template-columns:1fr !important; } }
+  .src-card { background:#f6f8fc; border:1px solid #d8def0;
+               border-radius:8px; padding:0.9em 1em; }
+  .src-card h3 { margin:0 0 0.3em 0; font-size:1em; }
+</style></head><body>
+<header class="site-header">
+  <div class="inner">
+    <div class="site-lang-switch"><a class="current" href="../pt-br/dataset.html" title="PT">PT</a><a href="../dataset.html" title="Switch to EN">EN</a></div>
+    <h1 class="site-title">Análise de Câncer de Pele em Redes Gênicas</h1>
+    <div class="tagline">Redes de atenção em grafos sobre PPI para classificação de melanoma</div>
+    <nav class="site-nav">
+    <a href="../pt-br/index.html">Predições</a>
+    <a href="../pt-br/exploration.html">Exploração</a>
+    <a href="../pt-br/about-gat.html">O que é uma GAT?</a>
+    <a href="../pt-br/overview.html">Treinamento</a>
+    <a href="../pt-br/dataset.html" class="active">Base de dados</a>
+    <a href="../pt-br/interpret/index.html">Interpretabilidade</a>
+    <a href="../pt-br/embeddings.html">Embeddings</a>
+    <a href="../pt-br/pseudotime.html">Pseudotempo</a>
+    <a href="../pt-br/stability.html">Estabilidade</a>
+    <a href="../pt-br/biomarkers.html">Biomarcadores</a>
+    </nav>
+  </div>
+</header>
+<div class="page">
+
+<h1>De onde vêm os dados</h1>
+
+<div class="plain">
+  <strong>Em uma frase.</strong> Cada amostra deste projeto é a medida de
+  expressão gênica de um paciente, pareada com a rede de interações
+  proteína–proteína (PPI) dos genes medidos, empacotadas como um único
+  grafo que a GAT pode consumir.
+</div>
+
+<h2>As duas fontes de dados</h2>
+<div class="sources">
+  <div class="src-card">
+    <h3>1. Expressão tumoral — TCGA-SKCM via UCSC Xena TOIL</h3>
+    <p>
+      As amostras de melanoma primário e metastático vêm do
+      <strong>TCGA-SKCM</strong> (The Cancer Genome Atlas, melanoma cutâneo),
+      reprocessadas pelo <strong>pipeline UCSC Xena TOIL</strong>. O TOIL
+      aplica um único pipeline uniforme de alinhamento + quantificação a
+      todas as amostras, o que é essencial ao misturar dados de fontes
+      diferentes.
+    </p>
+    <p>
+      Os valores são reportados como <code>log2(TPM + 0,001)</code> — "quanto
+      cada gene está sendo expresso, em escala log".
+    </p>
+  </div>
+  <div class="src-card">
+    <h3>2. Expressão de melanócitos benignos — GEO GSE112509 (nevos)</h3>
+    <p>
+      A classe comparadora saudável é composta por <strong>nevos
+      melanocíticos microdissecados a laser</strong> do
+      <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE112509">GSE112509</a>
+      (Hartmann <em>et al.</em>, 2018). Nevos são <em>lesões melanocíticas
+      benignas</em> — mesma linhagem celular do melanoma — então o contraste
+      que aprendemos é melanócito maligno vs benigno, e não melanócito vs
+      pele.
+    </p>
+    <p>
+      Os valores são <strong>contagens normalizadas por size-factor do
+      DESeq2</strong> obtidas no arquivo suplementar do GEO. Aplicamos a
+      transformação <code>log2(x + 1)</code> para colocá-las na mesma escala
+      log do TOIL.
+    </p>
+  </div>
+  <div class="src-card">
+    <h3>3. Interações proteicas — STRING</h3>
+    <p>
+      As arestas entre genes no grafo de cada amostra vêm do
+      <strong>STRING-DB</strong>, uma base de interações proteína–proteína
+      conhecidas. Usamos apenas interações <em>físicas</em> (proteínas que
+      de fato se ligam) com confiança ≥ 200.
+    </p>
+    <p>
+      O mesmo conjunto de arestas é usado para todas as amostras; apenas as
+      <em>features</em> dos nós (valores de expressão) mudam de paciente
+      para paciente.
+    </p>
+  </div>
+  <div class="src-card">
+    <h3>4. Harmonização entre coortes</h3>
+    <p>
+      TCGA-SKCM e GSE112509 vêm de pipelines diferentes, então valores
+      brutos não são diretamente comparáveis. Não dá para usar z-score por
+      coorte aqui: a classe nevo está totalmente em GSE112509 (coorte e
+      classe 2 são perfeitamente confundidas), então centralizar por coorte
+      forçaria a média de nevo de cada gene a igualar a média do tumor —
+      apagando o sinal que queremos aprender.
+    </p>
+    <p>
+      Em vez disso: (i) <strong>deslocamos o GSE para a escala do
+      TCGA</strong> subtraindo um único offset global (diferença das
+      medianas de expressão das duas coortes); depois (ii)
+      <strong>padronizamos ambas as coortes usando média e desvio por gene
+      do TCGA-treino</strong> como referência. Isso corrige o offset de
+      plataforma sem destruir as diferenças por gene entre nevos e tumores.
+    </p>
+    <p class="meta">
+      <em>Limitação.</em> Não é correção de batch completa — só
+      reprocessamento conjunto a partir dos FASTQs seria. O deslocamento é
+      global, não por gene, então vieses específicos por gene de cada
+      coorte ainda podem vazar.
+    </p>
+  </div>
+</div>
+
+<h2>Por que nevos, e não pele?</h2>
+<div class="callout">
+  <p>
+    Versões anteriores deste projeto usavam <strong>pele do GTEx</strong>
+    como classe saudável. Foi um erro — apontado por um biólogo da equipe.
+    <strong>Melanócitos não queratinizam.</strong> A queratinização é
+    função dos <em>queratinócitos</em>, um tipo celular distinto que forma
+    a maior parte da epiderme. A "pele" do GTEx é epiderme inteira, então é
+    majoritariamente queratinócitos — apenas uma pequena fração das células
+    são melanócitos.
+  </p>
+  <p>
+    Um modelo treinado contra a pele do GTEx acaba aprendendo, portanto,
+    uma assinatura <em>melanócito vs queratinócito</em>: genes de
+    queratinização (<code>KRT*</code>, <code>LOR</code>, <code>FLG</code>,
+    <code>IVL</code>) dominam. Isso é um artefato de composição tecidual,
+    não biologia melanocítica.
+  </p>
+  <p>
+    Substituir a pele do GTEx por <strong>nevos do GSE112509</strong>
+    corrige isso: nevos também são melanocíticos, então o contraste passa a
+    ser melanócito maligno (tumores TCGA-SKCM) vs melanócito benigno
+    (nevos). Genes de pigmentação / linhagem melanocítica
+    (<code>MITF</code>, <code>TYR</code>, <code>PMEL</code>,
+    <code>MLANA</code>, <code>DCT</code>, <code>SOX10</code>) tornam-se
+    sinal biologicamente interpretável, em vez de ruído ofuscado pelos
+    genes de queratina.
+  </p>
+</div>
+
+<h2>Três classes, uma tarefa</h2>
+<table>
+<tr><th>Rótulo</th><th>Amostras</th></tr>
+<tr><td>Tumor Primário</td><td>102</td></tr><tr><td>Metástase</td><td>367</td></tr><tr><td>Nevo Benigno</td><td>23</td></tr>
+</table>
+<p>
+  O modelo olha o grafo expressão-sobre-PPI de cada amostra e prediz a qual
+  destas três categorias ela pertence. <strong>Tumor Primário</strong> e
+  <strong>Metástase</strong> vêm do TCGA-SKCM; <strong>Nevo Benigno</strong>
+  vem do GSE112509.
+</p>
+
+<h2>Como é uma amostra real</h2>
+<p>
+  Uma amostra representativa por classe — escolhida como a mais próxima do
+  centroide da classe no espaço de expressão. Os valores são os z-scores
+  por coorte e por gene de fato alimentados ao modelo: <strong>+</strong>
+  significa que o gene é mais expresso que a média da coorte,
+  <strong>−</strong> significa menos. Os genes mostrados são curados, não
+  selecionados pelo modelo.
+</p>
+<div class="callout">
+  <strong>Olhe as linhas de queratinização.</strong> Se este conjunto ainda
+  contrastasse melanoma contra pele inteira, esperaríamos
+  <code>KRT5</code> / <code>KRT14</code> / <code>LOR</code> /
+  <code>FLG</code> dominando a classe Normal. Com nevos como comparador,
+  tanto nevos quanto tumores são melanocíticos — queratinização deixou de
+  ser o discriminador. Os genes de pigmentação (<code>MITF</code>,
+  <code>TYR</code>, <code>MLANA</code>, …) passam a ser o eixo
+  biologicamente significativo.
+</div>
+<div class="sources" style="grid-template-columns:repeat(3,1fr);">
+
+        <div class="src-card" style="border-top:4px solid #d62728;">
+          <h3 style="color:#d62728;">Tumor Primário</h3>
+          <p class="meta" style="margin:0 0 0.4em 0;">
+            ID do paciente: <code>TCGA-EB-A41A-01</code><br>
+            Coorte: <strong>TCGA-SKCM</strong>
+          </p>
+          <table style="font-size:0.85em;width:100%;">
+            <tr><th>Gene</th><th>Função</th><th style="text-align:right">Z</th>
+                <th style="width:150px">vs. média da coorte</th></tr>
+            <tr><td><code>TYR</code></td><td style="color:#2a8a3e;font-size:0.85em">pigmentação</td><td style="text-align:right;font-variant-numeric:tabular-nums">+0.68</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="70.0" y="3" width="9.189127890658188" height="8" fill="#d62728" opacity="0.85"/></svg></td></tr><tr><td><code>KRT14</code></td><td style="color:#a0540a;font-size:0.85em">queratinização</td><td style="text-align:right;font-variant-numeric:tabular-nums">+1.48</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="70.0" y="3" width="20.081713161044245" height="8" fill="#d62728" opacity="0.85"/></svg></td></tr><tr><td><code>LOR</code></td><td style="color:#a0540a;font-size:0.85em">queratinização</td><td style="text-align:right;font-variant-numeric:tabular-nums">-0.64</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="61.3390841072952" y="3" width="8.660915892704798" height="8" fill="#1f77b4" opacity="0.85"/></svg></td></tr>
+          </table>
+        </div>
+        <div class="src-card" style="border-top:4px solid #ff7f0e;">
+          <h3 style="color:#ff7f0e;">Metástase</h3>
+          <p class="meta" style="margin:0 0 0.4em 0;">
+            ID do paciente: <code>TCGA-DA-A1I2-06</code><br>
+            Coorte: <strong>TCGA-SKCM</strong>
+          </p>
+          <table style="font-size:0.85em;width:100%;">
+            <tr><th>Gene</th><th>Função</th><th style="text-align:right">Z</th>
+                <th style="width:150px">vs. média da coorte</th></tr>
+            <tr><td><code>TYR</code></td><td style="color:#2a8a3e;font-size:0.85em">pigmentação</td><td style="text-align:right;font-variant-numeric:tabular-nums">-0.31</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="65.83023491820668" y="3" width="4.169765081793309" height="8" fill="#1f77b4" opacity="0.85"/></svg></td></tr><tr><td><code>KRT14</code></td><td style="color:#a0540a;font-size:0.85em">queratinização</td><td style="text-align:right;font-variant-numeric:tabular-nums">-0.72</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="60.204803170732205" y="3" width="9.795196829267796" height="8" fill="#1f77b4" opacity="0.85"/></svg></td></tr><tr><td><code>LOR</code></td><td style="color:#a0540a;font-size:0.85em">queratinização</td><td style="text-align:right;font-variant-numeric:tabular-nums">+0.29</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="70.0" y="3" width="3.9405883600742295" height="8" fill="#d62728" opacity="0.85"/></svg></td></tr>
+          </table>
+        </div>
+        <div class="src-card" style="border-top:4px solid #2ca02c;">
+          <h3 style="color:#2ca02c;">Nevo Benigno</h3>
+          <p class="meta" style="margin:0 0 0.4em 0;">
+            ID do paciente: <code>FKH-021-022_N</code><br>
+            Coorte: <strong>GSE112509</strong>
+          </p>
+          <table style="font-size:0.85em;width:100%;">
+            <tr><th>Gene</th><th>Função</th><th style="text-align:right">Z</th>
+                <th style="width:150px">vs. média da coorte</th></tr>
+            <tr><td><code>TYR</code></td><td style="color:#2a8a3e;font-size:0.85em">pigmentação</td><td style="text-align:right;font-variant-numeric:tabular-nums">+0.19</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="70.0" y="3" width="2.637518557577016" height="8" fill="#d62728" opacity="0.85"/></svg></td></tr><tr><td><code>KRT14</code></td><td style="color:#a0540a;font-size:0.85em">queratinização</td><td style="text-align:right;font-variant-numeric:tabular-nums">+1.36</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="70.0" y="3" width="18.43804561747846" height="8" fill="#d62728" opacity="0.85"/></svg></td></tr><tr><td><code>LOR</code></td><td style="color:#a0540a;font-size:0.85em">queratinização</td><td style="text-align:right;font-variant-numeric:tabular-nums">+1.19</td><td><svg width="140" height="14" style="vertical-align:middle"><line x1="70.0" y1="0" x2="70.0" y2="14" stroke="#bbb" stroke-width="1"/><rect x="70.0" y="3" width="16.073881445481074" height="8" fill="#d62728" opacity="0.85"/></svg></td></tr>
+          </table>
+        </div>
+</div>
+
+
+<h2>Como é cada amostra</h2>
+<ul>
+  <li><strong>1000 genes (nós)</strong> por amostra — os genes cuja
+      expressão mais varia ao longo da coorte. Genes menos variáveis são
+      descartados por carregarem pouca informação discriminativa.</li>
+  <li><strong>196 arestas direcionadas</strong> por amostra
+      (≈ 98 interações únicas, ambas as direções preservadas para que a
+      passagem de mensagens flua nos dois sentidos).</li>
+  <li><strong>Grau médio 0,20</strong>; grau máximo 16;
+      <strong>936 genes</strong> não têm parceiros de PPI neste painel e
+      atuam como nós isolados — o modelo ainda usa sua expressão
+      diretamente, via self-loops.</li>
+</ul>
+
+<h2>Resumo — balanço de classes, distribuição de expressão, PCA, grau</h2>
+<p>
+  Quatro visualizações de sanidade do conjunto antes de qualquer modelagem:
+</p>
+<ul>
+  <li><strong>Superior esquerdo:</strong> quantas amostras por classe.
+    Note que a classe nevo é bem menor que as tumorais (isso é tratado no
+    treino via perda ponderada por classe).</li>
+  <li><strong>Superior direito:</strong> distribuição dos valores de
+    expressão por classe, após a harmonização z-score por coorte. As três
+    classes estão na mesma escala; as diferenças entre classes refletem
+    biologia, não unidades de pipeline.</li>
+  <li><strong>Inferior esquerdo:</strong> PCA da expressão harmonizada
+    (sem nenhum modelo envolvido). Nevos separam-se claramente dos
+    tumores; a sub-tarefa mais difícil é separar Primário de Metástase.
+    PC1 + PC2 explicam 17,9% da variância.</li>
+  <li><strong>Inferior direito:</strong> distribuição de grau do grafo
+    PPI. Alguns genes hub têm muitos parceiros; a maioria tem poucos.</li>
+</ul>
+<img src="dataset_overview.png" alt="Visão geral do conjunto de dados">
+
+<h2>O grafo PPI — interativo</h2>
+<p>
+  Layout force-directed da mesma rede PPI usada no grafo de toda amostra.
+  <strong>Arraste</strong> nós para explorar; <strong>role</strong> para
+  dar zoom; <strong>passe o mouse</strong> sobre um nó para ver nome do
+  gene, grau e expressão média. Cor do nó = expressão média na coorte
+  (azul = negativa, branco ≈ 0, vermelho = positiva); tamanho do nó =
+  número de parceiros PPI. Os maiores hubs já vêm rotulados.
+</p>
+<div class="callout">
+  <strong>Por que hubs importam para interpretabilidade.</strong> Genes com
+  muitos parceiros PPI são alvos fáceis para qualquer mecanismo de atenção
+  — eles coletam informação de muitos vizinhos. Por isso toda análise de
+  atenção neste projeto é comparada contra um <em>baseline de grau</em>
+  (veja a página de
+  <a href="interpret/index.html">interpretabilidade da atenção</a>). Um
+  ranking de atenção que supera o grau está fazendo algo que o grafo
+  estático sozinho não consegue.
+</div>
+<iframe src="dataset_ppi_graph.html" style="width:100%;height:760px;
+        border:1px solid #ddd;border-radius:6px;" loading="lazy"></iframe>
+<details style="margin-top:0.8em;">
+  <summary style="cursor:pointer;color:#666;font-size:0.92em;">
+    Renderização estática (PNG) para impressão / fallback
+  </summary>
+  <img src="dataset_ppi_graph.png" alt="Grafo PPI (estático)">
+</details>
+
+<h2>Resumo de proveniência</h2>
+<ul>
+  <li><strong>Coorte tumoral:</strong> TCGA-SKCM (Tumor Primário +
+    Metástase), via reprocessamento UCSC Xena TOIL.
+    Quantificação: <code>log2(TPM + 0,001)</code>.</li>
+  <li><strong>Coorte de melanócitos benignos:</strong> GEO GSE112509
+    (Hartmann <em>et al.</em>, 2018) — nevos microdissecados a laser.
+    Quantificação: contagens normalizadas por size-factor do DESeq2,
+    seguidas de <code>log2(x + 1)</code>.</li>
+  <li><strong>Harmonização:</strong> offset global da coorte removido
+    (mediana do GSE deslocada para a mediana do TCGA-treino) e ambas as
+    coortes padronizadas usando média e desvio por gene do TCGA-treino
+    como referência.</li>
+  <li><strong>Painel de genes:</strong> top-1000 genes mais variáveis,
+    selecionados apenas na divisão de treino (sem leakage).</li>
+  <li><strong>Grafo:</strong> PPIs físicas do STRING, confiança ≥ 200.</li>
+  <li><strong>Grafo por amostra:</strong> 1000 nós, 196 arestas
+    direcionadas (topologia compartilhada, features de expressão por
+    amostra).</li>
+  <li><strong>Total de amostras:</strong> 492
+    (102 Tumor Primário / 367 Metástase / 23 Nevo Benigno).</li>
+</ul>
+<p class="meta">
+  Origem do pipeline: <code>scripts/download_toil.py</code>. O arquivo de
+  dataset ativo é definido em <code>src/config.py</code> como
+  <code>DATASET_FILE</code>.
+</p>
+</div>
+</body></html>
