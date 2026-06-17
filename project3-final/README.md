@@ -62,7 +62,22 @@ Mais especificamente, a equação das _embeddings_  _H_ de uma determinada camad
 
 ![Graph Neural Network](assets/images/gat.png)
 
-GAT
+As **Graph Attention Networks** é um tipo de Graph Neural Network, mas que utiliza um score de atenção dado pela seguinte equação:
+
+![Attention score](assets/images/importance_score.png)
+
+Esse score de atenção é obtido por meio do treinamento de uma rede neural simples (MLP), como ilustra a figura a seguir:
+
+![Attention mechanism](assets/images/attention_mechanism.png)
+*Mecanimso de atenção de uma Graph Neural Network*. Fonte: Velickovi, P. et al (2018) 
+
+O score de importância ainda passa por uma normalização Softmax:
+![Softmax](assets/images/softmax.png)
+
+Por fim, as __embbedings__ da GAT é dada pela agregação:
+
+![aggregation](assets/images/weighted_aggregation.png)
+
 
 A motivação clínica e técnica deste trabalho dialoga diretamente com (i) o uso da
 plataforma **Open Targets** para priorização de alvos terapêuticos [5], (ii) o
